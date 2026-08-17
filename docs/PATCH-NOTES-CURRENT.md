@@ -102,3 +102,16 @@ CLOSED this cycle: v4.1.6 open item 2 (Credit-Aware Routing body missing from th
 ## Lesson written this cycle
 
 **L-20260817-06** — A section that exists as a body in one package file but only as a history mention in its sibling is drift the current linter cannot see: specguard lints one file at a time, so the SPEC's missing Credit-Aware Routing body registered only as an ADVISORY while the FOR-CLAUDE copy looked fine. Mirroring must copy substance verbatim (enum tokens, threshold rows, timezone string), not paraphrase, and the proposed cross-file check must compare section presence, not just version rows.
+
+## System health smoke — 2026-08-17
+
+retrieval_ref `LM-RET-2026-08-17T23:12Z-C` (orchestration-memory@81a2c4cbccb1, repo@48559ee, SYSTEM-CURRENT L10/L96–100, PATCH-NOTES tail) — Fable gate, echoed by Opus unit.
+
+- [x] GitHub canonical readable — ls-remote HEAD 48559ee from cloud sandbox 23:12Z; push was proxy-blocked at run start (session source grant pending); actual push result = this commit's own presence on main
+- [x] Drive mirror reachable — folder 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE, PATCH-NOTES-CURRENT.md (10roA9WnUm17NL22cmONJKsnFT4L9EZS2) modified 2026-08-17T23:00:06Z
+- [x] Actions sync path present — sync-docs-to-drive.yml (push:main, paths docs/**), last green run 32077957124; THIS run's outcome goes in the Summary Report, not pre-claimed here
+- [x] Fable/Opus routing stated — SYSTEM-CURRENT hierarchy L10 + routing table L96–100 (role-based split)
+- [x] Grok Heavy critique path exercised — grok.com "Heavy — Team of Experts · Grok 4.5", chat "Smoke Path Risks and Fragile Claims" in Owner's Grok history, 9 bullets received, 3 applied
+- [x] Open items still listed bluntly — v4.1.9's REMAINING OPEN ITEMS list (10 items) above stands unchanged; none closed, none added, by this smoke
+
+Routing this smoke: Fable gated/routed only; one Opus unit executed (one infra bounce); one Grok Heavy critique call.
