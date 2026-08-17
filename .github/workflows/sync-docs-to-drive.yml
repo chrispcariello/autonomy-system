@@ -21,15 +21,21 @@ jobs:
     env:
       DRIVE_FOLDER_ID: 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE
     steps:
-      - name: Check secret present
+      - name: Check secrets present
         env:
+          OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
           SA_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
-          if [ -z "$SA_JSON" ]; then
-            echo "::error::BLOCKED_ON_OWNER_SECRETS — GOOGLE_SERVICE_ACCOUNT_JSON not configured; see README 'Drive sync setup'"
+          if [ -n "$OAUTH_CLIENT_ID" ] && [ -n "$OAUTH_CLIENT_SECRET" ] && [ -n "$OAUTH_REFRESH_TOKEN" ]; then
+            echo "MODE=oauth — owner auth; creates and updates both work (values not printed)"
+          elif [ -n "$SA_JSON" ]; then
+            echo "MODE=service-account — fallback; updates only, creates fail with 403 storageQuotaExceeded (values not printed)"
+          else
+            echo "::error::BLOCKED_ON_OWNER_SECRETS — set GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN (preferred; see README 'Drive sync setup — OAuth') or GOOGLE_SERVICE_ACCOUNT_JSON (updates only)"
             exit 1
           fi
-          echo "secret present (value not printed)"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,9 +46,14 @@ jobs:
           python-version: '3.12'
 
       - name: Install Drive client
+        # google-auth-oauthlib is deliberately NOT installed here: the browser
+        # consent flow only runs locally, in tools/setup_drive_oauth.py.
         run: pip install --quiet google-auth google-api-python-client
 
       - name: Upsert docs to Drive folder
         env:
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python tools/drive_sync.py --src docs --folder "$DRIVE_FOLDER_ID"
