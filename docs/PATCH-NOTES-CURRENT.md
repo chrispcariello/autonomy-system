@@ -59,3 +59,45 @@ v4.1.4 present in FOR-CLAUDE history ✓ · HR7 fail-on-missing-retrieval_ref pr
 - ADDED: "## Shared visibility + version control" section in both SYSTEM docs (GitHub repo `autonomy-system` canonical; Drive folder 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE shared mirror; run incomplete until commit+tag, Drive sync, and SHA+link in Summary Report; no secrets in repo). Logged as v4.1.8 rows in both files.
 - ADDED: .github/workflows/sync-docs-to-drive.yml + tools/drive_sync.py (upsert docs/ to the Drive folder; fails with BLOCKED_ON_OWNER_SECRETS message until GOOGLE_SERVICE_ACCOUNT_JSON secret exists). Repo README carries the service-account setup steps.
 - Open items: all prior items stand; Actions sync BLOCKED_ON_OWNER_SECRETS until the Owner creates the Google service account + GitHub secret.
+
+## v4.1.9 addendum (2026-08-17, SPEC credit-body mirror)
+
+**What changed**
+
+- ADDED: full `## Credit-Aware Routing (browser checks)` section in SYSTEM-SPEC-CURRENT.md (58 lines, inserted between `## Model Routing` and `## Deferred` — the position analogous to where the FOR-CLAUDE package carries it, and never after Version History). Substance mirrored from SYSTEM-CURRENT.md: CREDIT-CHECK note posted by Cowork to the Event Bus as UNVERIFIED, both threshold tables, the full seven-value Recommendation enum `[NORMAL | CONSERVE_CLAUDE | CLAUDE_CRITICAL | CONSERVE_GROK | GROK_DOWN | CONSERVE_BOTH | UNKNOWN]`, the six Grok Build delegation strategies (volume/critique/planning offload to the Grok stack, batch don't stream, verify-before-apply, fail soft), the standing order for Cowork, and the weekly reset "Sunday 9:00 PM America/New_York" at all four in-section sites, byte-identical to the FOR-CLAUDE rendering.
+- ADDED: v4.1.9 history rows in BOTH package files in the same patch (L-20260817-04). "(this document)" moved from the v4.1.8 row to the v4.1.9 row in each file — after the em dash, so the newest row still parses (one marker per file, verified).
+- UNCHANGED: SYSTEM-CURRENT.md keeps its Credit-Aware Routing section and every other body section byte-identical; its only edit is the two history lines. No architecture change, no Grok Bot activation, no Event Bus collapse rule invented.
+- Voice-only adaptations (SPEC style, no substance change): prose intro instead of a `### Purpose` heading; "Snapshot → Verify → Rollback" written in full in delegation strategy 1 where the FOR-CLAUDE copy abbreviates it to "Snapshot → Rollback" (same gate, and the SPEC's established phrasing); "below 5% remaining" for "< 5% remaining" in the standing order.
+
+**Why**
+
+Open item 2 from the v4.1.6 patch — Credit-Aware Routing lived only in the FOR-CLAUDE package while the SPEC logged it in history (v4.1.4 row) and stayed silent on thresholds, the standing order, and the reset. Root cause is L-20260817-04 (multi-file source-of-truth drift): every version row must land in every package file in the same patch. This cycle also shows the sharper form of that defect — a *body section* can be missing from a sibling file while both files lint clean, which is why L-20260817-06 was written.
+
+**specguard evidence (before → after)**
+
+- SYSTEM-SPEC-CURRENT.md: **2 findings [0 FAIL, 2 ADVISORY] → 1 [0 FAIL, 1 ADVISORY]**. `credit-section-missing` cleared; mode/enum checks now actually run on the SPEC and pass (enum 7/7 against declared threshold modes, identical set and spelling to SYSTEM-CURRENT). Remaining: the pre-existing `section-not-in-history` advisory on 'Layers' (keyword heuristic, unchanged). Version run parses v1 → v4.1.9 contiguously.
+- SYSTEM-CURRENT.md: **3 findings [2 FAIL, 1 ADVISORY] → 3 [2 FAIL, 1 ADVISORY]** — identical baseline and after (the two `model-budget-collapsed` FAILs on the pooled template line and the pooled threshold heading, plus the 'Hierarchy' advisory). No new failures. Version run parses v1 → v4.1.9 contiguously.
+- Net: zero new FAILs in either file; one advisory cleared.
+
+**NOTE — pooled Fable/Opus budget (open item 1, deliberately NOT fixed here)**
+
+The mirror faithfully reproduces the pooled wording, so `Claude Fable/Opus weekly: ~XX% used (~YY% remaining)` and `### Claude thresholds (Fable / Opus weekly)` now exist at a **second site** (SPEC) as well as in FOR-CLAUDE. specguard does **not** raise `model-budget-collapsed` on the SPEC copy: `check_model_budget` only runs when the document has an H2 section whose title contains "model split", and the SPEC keeps the Owner model split as an H3 bullet under Layers → Main Coordinator. So the SPEC's pooled line is unlinted, not clean. Accepted residual for this hygiene patch, recorded rather than papered over; fixing it means splitting per-model reporting, which still needs an Owner decision.
+
+## REMAINING OPEN ITEMS after v4.1.9 (not falsely green — these remain)
+
+CLOSED this cycle: v4.1.6 open item 2 (Credit-Aware Routing body missing from the SPEC).
+
+1. **Pooled Fable/Opus budget** — two separately-budgeted models still report as one figure in the CREDIT-CHECK template and the shared threshold table; "Fable exhausted, Opus fine" is inexpressible and a note written from the template cannot pass `specguard --check-note`. Now duplicated at a second site (SPEC) by the v4.1.9 mirror, and unlinted there (see NOTE above). Needs an Owner decision on split reporting; not ordered.
+2. **specguard cross-file version-sync check** — still **proposed, not built**. This cycle proves it must also compare *section presence and content* across package files, not just version rows: both files linted clean while the SPEC was missing a 58-line body section (L-20260817-06).
+3. **SPEC team table (L48–52)** still uses pre-split phrasing ("Claude Code (Opus/Fable)", "Claude Code + Opus 5") — stylistically inconsistent with the rebound Hard Rule 1 and routing table; not ordered.
+4. **v4.1.5 condensation drops** remain unrestored in FOR-CLAUDE (UNVERIFIED→verified promotion path owner, "raise an Issue" on 3 fails, "never an authority", non-significant carve-out, worktrees/Grok-Build bridge as shared infra) — not ordered.
+5. **Write-safety auditability**: Hard Rules 1/2/4 remain honor-system (no write-ledger, no actor/model attribution on writes).
+6. **Self-test pass criteria and the 3-fail counter scope** remain undefined in both docs.
+7. **Grok "low" is unquantified**, so the CONSERVE_BOTH trigger stays a judgement call; the reset moment is transcribed from the Owner directive, not verified against the provider UI. The mirror copies this imprecision into the SPEC unchanged.
+8. **Heuristic advisories**: Hierarchy (FOR-CLAUDE) and Layers (SPEC) unattributed in history — keyword-heuristic noise, listed for completeness.
+9. **Deferred by directive, unchanged**: Event Bus duplicate-collapse rule (Phase 2, no rule invented here); Grok Bot Layer (deferred, not cancelled, not activated here).
+10. ~~Actions sync BLOCKED_ON_OWNER_SECRETS~~ — CLOSED earlier on 2026-08-17, before this patch: the sync-docs-to-drive workflow is LIVE on Owner OAuth (GOOGLE_OAUTH_CLIENT_ID/CLIENT_SECRET/REFRESH_TOKEN repo secrets; Drive-visible create proof SYNC-SMOKE.txt), with the service-account path retained as update-only fallback. Listed because the v4.1.6-era open-items list above still names it; kept here so the closure is on the record, not silently dropped.
+
+## Lesson written this cycle
+
+**L-20260817-06** — A section that exists as a body in one package file but only as a history mention in its sibling is drift the current linter cannot see: specguard lints one file at a time, so the SPEC's missing Credit-Aware Routing body registered only as an ADVISORY while the FOR-CLAUDE copy looked fine. Mirroring must copy substance verbatim (enum tokens, threshold rows, timezone string), not paraphrase, and the proposed cross-file check must compare section presence, not just version rows.

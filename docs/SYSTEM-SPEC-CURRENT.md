@@ -152,6 +152,64 @@ Superseded files go to AUTONOMY-SYSTEM/delete-me/.
 
 ---
 
+## Credit-Aware Routing (browser checks)
+
+Before multi-step work, Claude Cowork checks **Claude** and **Grok/xAI** usage in the browser so that work can be delegated before a provider is exhausted mid-run. The check is an input to routing, not an authority: Cowork observes and reports, the Coordinator routes.
+
+**Claude weekly reset: Sunday 9:00 PM America/New_York.**
+
+### Who checks
+- **Claude Cowork** — primary credit checker (browser computer-use); posts the result to the Event Bus inbox as UNVERIFIED, like any other Cowork observation
+- **Claude Code** — requests a Cowork usage check before a long run; never assumes unlimited Claude budget
+- **Grok / Grok Build** — receives delegated work when Claude is low; Grok limits still apply where they are known
+
+### How to check (browser)
+**Claude:** open the Claude/Anthropic usage or limits page; read weekly Fable 5 and Opus 5 used/remaining.
+**Grok/xAI:** open the Grok or xAI account/usage page; read remaining quota for Grok, Grok Heavy, and Grok Build if shown. If only plan-level limits are visible, record that.
+
+**CREDIT-CHECK note format (Event Bus UNVERIFIED):**
+```
+CREDIT-CHECK [timestamp]
+Claude Fable/Opus weekly: ~XX% used (~YY% remaining) · reset Sunday 9:00 PM America/New_York
+Grok/xAI: [exact % if found | plan-level only | page not found]
+Recommendation: [NORMAL | CONSERVE_CLAUDE | CLAUDE_CRITICAL | CONSERVE_GROK | GROK_DOWN | CONSERVE_BOTH | UNKNOWN]
+```
+Numbers are never invented. If a figure is unreadable, it is recorded as UNKNOWN.
+
+### Claude thresholds (Fable / Opus weekly)
+| Remaining | Mode | Action |
+|-----------|------|--------|
+| > 20% | NORMAL | Standard routing |
+| 5–20% | CONSERVE_CLAUDE | Keep orchestration brief; shift volume → Grok Build; critique → Grok Heavy; avoid long multi-team Claude loops |
+| < 5% | CLAUDE_CRITICAL | No new Claude autonomous multi-step runs. Short checks only. Delegate planning, volume, critique, long loops to Grok stack |
+| Unknown | UNKNOWN | Treat as CONSERVE_CLAUDE if Owner reported high usage; browser-check before any long Claude run |
+
+### Grok thresholds
+| State | Mode | Action |
+|-------|------|--------|
+| Comfortable headroom | NORMAL | Accept delegated volume + critique |
+| Low / near cap | CONSERVE_GROK | Fewer Heavy critiques; smaller Build jobs; return work to Claude only if Claude has headroom |
+| Exhausted / unavailable | GROK_DOWN | Claude-only for critical path if Claude has credits; else stop long runs |
+| Page unreadable | UNKNOWN | Do not assume unlimited Grok; prefer smaller batches |
+
+**Both low → CONSERVE_BOTH:** stop long autonomous loops; Owner-critical short tasks only; queue the rest until the Claude reset (Sunday 9:00 PM America/New_York) and/or Grok recovery.
+
+### Grok Build delegation strategies (when Claude is low)
+1. **Volume offload** — sweeps, bulk edits, drafts → Grok Build; Claude only verifies and applies, under Snapshot → Verify → Rollback
+2. **Critique offload** — design and adversarial review → Grok Heavy; routine critique skipped on low-risk docs
+3. **Planning offload** — decomposition, options, test design → Grok or Grok Heavy; Claude keeps final verification and the live write
+4. **Batch, don’t stream** — one clear package with acceptance criteria per Build job
+5. **Verify-before-apply** — Build output is always UNVERIFIED; stage it for after credit recovery if Claude is critical
+6. **Fail soft** — if Grok is also low, stop expansion, write a queue list, do not burn the last Claude credits
+
+### Standing order for Cowork
+Before any multi-step autonomous run: (1) browser-check Claude weekly Fable/Opus usage, (2) browser-check Grok/xAI usage if reachable, (3) post the CREDIT-CHECK note to the Event Bus as UNVERIFIED, (4) if Claude is below 5% remaining do not start a long Claude loop — prepare Grok handoff packages instead (mode: CLAUDE_CRITICAL), (5) if both providers are low, stop long runs and report (mode: CONSERVE_BOTH), (6) the Claude weekly reset is Sunday 9:00 PM America/New_York.
+
+### What this does not claim
+There is no silent mid-call API for exact Claude or Grok percentages. The browser read is the method. If the UI is blocked or has changed, record UNKNOWN (mode: UNKNOWN) and conserve.
+
+---
+
 ## Deferred
 **Grok Bot Layer (Phase 1 package)** — specified, deferred from core at v4, not cancelled. Activate in Phase 2. Do not delete or treat as superseded.
 
@@ -170,4 +228,5 @@ Superseded files go to AUTONOMY-SYSTEM/delete-me/.
 - **v4.1.5** — CHANGED model split: Fable 5 Max/Ultracode = highest-level orchestration; Opus 5 Max/Ultracode = all other Claude work (Owner rule; not cost-based); Hard Rule 1 rebound from 'Claude Code + Opus 5' to the Claude Code surface
 - **v4.1.6** — FIXED (hygiene): history completed; Design Goal, Main Coordinator, Hard Rule 1 and Model Routing aligned to the v4.1.5 split; reset timezone America/New_York (in FOR-CLAUDE package)
 - **v4.1.7** — ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
-- **v4.1.8** — (this document) ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
+- **v4.1.8** — ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
+- **v4.1.9** — (this document) ADDED: Credit-Aware Routing body mirrored from the FOR-CLAUDE package (was history-only in this SPEC since the v4.1.4 row): CREDIT-CHECK note posted by Cowork to the Event Bus as UNVERIFIED, Claude and Grok threshold modes with the full Recommendation enum, Grok Build delegation strategies, standing order for Cowork, weekly reset Sunday 9:00 PM America/New_York. No substantive rule changes
