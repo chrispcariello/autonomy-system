@@ -19,6 +19,8 @@ date by the `sync-docs-to-drive` GitHub Actions workflow. Any product-local sand
 | `docs/run-journals/SMOKE-*.md` | Smoke-test run records |
 | `tools/specguard.py` | Mechanical consistency linter for the SYSTEM docs |
 | `tools/drive_sync.py` | Upserts `docs/` into the Drive mirror folder |
+| `tools/setup_drive_oauth.py` | Owner's one-time local OAuth helper (browser consent → repo secrets) |
+| `SETUP-DRIVE-OAUTH.bat` | Windows double-click wrapper for the helper above |
 | `.github/workflows/sync-docs-to-drive.yml` | Runs the sync on any `docs/**` push and on demand |
 
 ## Shared visibility + version control
@@ -29,41 +31,52 @@ date by the `sync-docs-to-drive` GitHub Actions workflow. Any product-local sand
 - /root/staging remains temporary only
 - Never commit secrets, OAuth client secrets, service-account keys, or .env files
 
-## Drive sync setup
+## Drive sync setup — OAuth (current)
 
-The workflow is wired and will run, but it **fails fast with
-`BLOCKED_ON_OWNER_SECRETS`** until the Owner completes these steps. Nothing here needs
-to be done by an agent — steps 1–4 require Owner-held credentials.
+The sync authenticates **as the Owner** via an OAuth refresh token, so files it uploads
+are Owner-owned. That is what makes CREATE work: a service account has no Drive storage
+quota and cannot own a new file in a consumer My Drive folder (see the legacy note
+below). Until the three `GOOGLE_OAUTH_*` secrets exist the workflow fails fast with
+`BLOCKED_ON_OWNER_SECRETS`. All five steps are Owner-only — no agent can do them, and no
+credential value is ever printed, logged, or committed.
 
-1. Create or choose a Google Cloud project, then enable the **Google Drive API** for it
-   (APIs & Services → Library → Google Drive API → Enable).
-2. Create a **service account** in that project (IAM & Admin → Service Accounts). No
-   project roles are needed. Open the service account → Keys → Add key → Create new key →
-   **JSON**, and download the key file.
-3. Share the Drive folder **AUTONOMY-SYSTEM** (id `1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE`)
-   with the service account's `client_email` address (found in the key file), granting
-   **Editor**. Drive access is per-folder — without this share the sync sees nothing.
-4. Add the repo secret **`GOOGLE_SERVICE_ACCOUNT_JSON`** containing the full JSON key
-   content, via GitHub → Settings → Secrets and variables → Actions → New repository
-   secret, or from a terminal:
+1. **OAuth consent screen.** [console.cloud.google.com](https://console.cloud.google.com)
+   → the **same project** where the Google Drive API is enabled → APIs & Services →
+   **OAuth consent screen**: User type **External**, add **yourself as a test user**, and
+   add the scope `.../auth/drive` (`https://www.googleapis.com/auth/drive`).
+   While the app's publishing status stays **Testing**, Google expires the refresh token
+   after **7 days** — click **Publish app** on that same screen to keep it long-lived
+   (staying unverified is fine; you are the only user). If the sync ever fails with
+   `invalid_grant`, the token died: re-run `SETUP-DRIVE-OAUTH.bat` to mint a fresh one.
+2. **OAuth client.** Credentials → Create credentials → **OAuth client ID** →
+   Application type **Desktop app** → Create → **Download JSON**. Leave the downloaded
+   `client_secret*.json` in your **Downloads** folder.
+3. **Run `SETUP-DRIVE-OAUTH.bat`** (double-click it in the repo folder). It finds
+   `client_secret*.json` in either the repo folder or Downloads, opens your browser —
+   click **Allow** (the "unverified app" warning is expected; you are your own test
+   user) — and then stores the three repo secrets `GOOGLE_OAUTH_CLIENT_ID`,
+   `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`. If the **GitHub CLI**
+   (`gh`) is installed and logged in, this is silent — zero prompts. Otherwise it walks
+   you through **3 clipboard-paste prompts**: each value lands on your clipboard, the
+   GitHub "New secret" page opens, you type the name shown, paste, save, press Enter.
+   The refresh token is held in memory only; nothing is written to disk.
+4. **Delete `client_secret*.json`** from Downloads (and the repo folder if you copied it
+   there). It is a credential — it must never live in this repo or a shared folder.
+5. **Run the sync:** Actions → **sync-docs-to-drive** → Run workflow, or push any change
+   under `docs/`. The run logs `MODE=oauth` and `auth: oauth (owner)`, never a value.
 
-   ```sh
-   gh secret set GOOGLE_SERVICE_ACCOUNT_JSON < key.json
-   ```
+### Legacy: service account (updates only)
 
-5. Trigger a sync: push any change under `docs/`, or run it manually via
-   Actions → **sync-docs-to-drive** → Run workflow.
-6. **Delete the local key file** once the secret is stored. It must never live in this
-   repo or in a shared folder.
-
-### Alternative: OAuth client (fallback only)
-
-If the Google Workspace org policy blocks service-account key creation, the fallback is
-an OAuth client (Desktop app) plus a long-lived refresh token stored as a repo secret,
-with a token-refresh step added ahead of the sync step to exchange it for an access
-token. This is documented as a fallback only — the service-account path above is the
-supported one, because an OAuth refresh token is bound to a human account and silently
-breaks when that account's password or grants change.
+The original setup used a service-account JSON key in `GOOGLE_SERVICE_ACCOUNT_JSON`, and
+`drive_sync.py` still falls back to it when no OAuth secrets are present. It is not
+sufficient on its own: a service account has **no Drive storage quota**, so any CREATE
+into the Owner's My Drive folder is rejected with `403 storageQuotaExceeded`
+("Service Accounts do not have storage quota"). UPDATEs of files the Owner already owns
+do succeed, which is why the fallback is kept — but new files, including new subfolders,
+require the OAuth path above. The fallback prints
+`auth: service-account (fallback - updates only; creates will fail on My Drive)` and, on
+that 403, an error pointing back to this section. The folder must also be shared with
+the service account's `client_email` as **Editor** for even updates to work.
 
 ## specguard
 
