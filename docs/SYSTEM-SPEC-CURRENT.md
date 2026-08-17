@@ -1,6 +1,6 @@
-# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.7
+# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.8
 **Date:** 2026-08-17  
-v4.1.7 adds the Durable storage rule (shared durable home AUTONOMY-SYSTEM); v4.1.6 was the hygiene patch (history completed, Fable/Opus alignment, reset timezone).
+v4.1.8 adds Shared visibility + version control (GitHub canonical, Drive mirror); v4.1.7 added the Durable storage rule; v4.1.6 was the hygiene patch.
 
 ---
 
@@ -130,6 +130,16 @@ Superseded files go to AUTONOMY-SYSTEM/delete-me/.
 
 ---
 
+## Shared visibility + version control
+
+- Canonical store: private GitHub repo `autonomy-system`
+- Shared mirror: Google Drive AUTONOMY-SYSTEM folder for external review
+- A run is incomplete until: (1) docs committed + tagged on version change, (2) Drive mirror updated via Actions or explicit sync, (3) Summary Report includes commit SHA and Drive folder link
+- /root/staging remains temporary only
+- Never commit secrets, OAuth client secrets, service-account keys, or .env files
+
+---
+
 ## Model Routing
 | Task | Surface | Model |
 |------|---------|-------|
@@ -159,4 +169,5 @@ Superseded files go to AUTONOMY-SYSTEM/delete-me/.
 - **v4.1.4** — ADDED (FOR-CLAUDE package): Credit-Aware Routing — browser usage checks, Claude/Grok thresholds, Grok Build delegation strategies, Sunday weekly reset, standing order for Cowork. Section lives in the FOR-CLAUDE package; not yet mirrored into this SPEC body
 - **v4.1.5** — CHANGED model split: Fable 5 Max/Ultracode = highest-level orchestration; Opus 5 Max/Ultracode = all other Claude work (Owner rule; not cost-based); Hard Rule 1 rebound from 'Claude Code + Opus 5' to the Claude Code surface
 - **v4.1.6** — FIXED (hygiene): history completed; Design Goal, Main Coordinator, Hard Rule 1 and Model Routing aligned to the v4.1.5 split; reset timezone America/New_York (in FOR-CLAUDE package)
-- **v4.1.7** — (this document) ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
+- **v4.1.7** — ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
+- **v4.1.8** — (this document) ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)

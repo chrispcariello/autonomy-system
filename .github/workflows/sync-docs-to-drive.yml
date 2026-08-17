@@ -1,0 +1,48 @@
+name: sync-docs-to-drive
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: drive-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      DRIVE_FOLDER_ID: 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE
+    steps:
+      - name: Check secret present
+        env:
+          SA_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$SA_JSON" ]; then
+            echo "::error::BLOCKED_ON_OWNER_SECRETS — GOOGLE_SERVICE_ACCOUNT_JSON not configured; see README 'Drive sync setup'"
+            exit 1
+          fi
+          echo "secret present (value not printed)"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Drive client
+        run: pip install --quiet google-auth google-api-python-client
+
+      - name: Upsert docs to Drive folder
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python tools/drive_sync.py --src docs --folder "$DRIVE_FOLDER_ID"

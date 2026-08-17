@@ -53,3 +53,9 @@ v4.1.4 present in FOR-CLAUDE history ✓ · HR7 fail-on-missing-retrieval_ref pr
 
 - ADDED: "## Durable storage rule" section in SYSTEM-CURRENT.md and SYSTEM-SPEC-CURRENT.md (AUTONOMY-SYSTEM shared durable home; product-local staging temporary; runs incomplete until artifacts promoted; superseded files to delete-me/). Logged as v4.1.7 history rows in both files — no unattributed sections (L-20260817-01), no package drift (L-20260817-04).
 - Open items: all 9 v4.1.6 items above stand unchanged; plus specguard still lacks a cross-file version-sync check.
+
+## v4.1.8 addendum (2026-08-17, git + Actions wiring)
+
+- ADDED: "## Shared visibility + version control" section in both SYSTEM docs (GitHub repo `autonomy-system` canonical; Drive folder 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE shared mirror; run incomplete until commit+tag, Drive sync, and SHA+link in Summary Report; no secrets in repo). Logged as v4.1.8 rows in both files.
+- ADDED: .github/workflows/sync-docs-to-drive.yml + tools/drive_sync.py (upsert docs/ to the Drive folder; fails with BLOCKED_ON_OWNER_SECRETS message until GOOGLE_SERVICE_ACCOUNT_JSON secret exists). Repo README carries the service-account setup steps.
+- Open items: all prior items stand; Actions sync BLOCKED_ON_OWNER_SECRETS until the Owner creates the Google service account + GitHub secret.
