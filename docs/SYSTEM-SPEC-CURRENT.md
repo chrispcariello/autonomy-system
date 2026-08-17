@@ -1,6 +1,6 @@
-# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.8
+# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.9
 **Date:** 2026-08-17  
-v4.1.8 adds Shared visibility + version control (GitHub canonical, Drive mirror); v4.1.7 added the Durable storage rule; v4.1.6 was the hygiene patch.
+v4.1.9 mirrors the Credit-Aware Routing body into this SPEC; v4.1.8 added Shared visibility + version control (GitHub canonical, Drive mirror); v4.1.7 added the Durable storage rule.
 
 ---
 
