@@ -21,3 +21,20 @@ retrieval_ref: LM-RET-2026-08-17T12:20Z-G
 3. Then complete the service-account secret (README "Drive sync setup" steps 1–6) and run the `sync-docs-to-drive` workflow.
 
 **Bundle:** `autonomy-system-v4.1.8.bundle` — refreshed this run to include commit 3; `git bundle verify` OK, complete history, 4 refs. It is the canonical carrier until the push is unblocked. It lives at `/root/staging/system-selftest-2026-08-14/`, which the Durable storage rule marks temporary — **it is not durable storage until it is delivered in-conversation and/or uploaded to Drive `staging/`.** Neither has happened as of this note.
+
+---
+
+## UPDATE 2026-08-17T22:55Z — ACTIONS→DRIVE SYNC LIVE (OAuth owner-auth)
+
+retrieval_ref: LM-RET-2026-08-17T22:52Z-N
+
+Everything above is superseded. Current state:
+
+- **github_push:** PASS (earlier today). Remote `main` canonical; tags v4.1.7 + v4.1.8 verified on remote. OAuth fix landed on main via 3 browser upload commits (tools 1/3, workflow 2/3, README+bat 3/3), HEAD then `2e37b2a`.
+- **actions_sync:** **LIVE.** Auth = Owner OAuth (GOOGLE_OAUTH_CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN repo secrets, set 2026-08-17 via GitHub REST sealed-box, all HTTP 201). Dispatch run **32077957124** → conclusion **success** (37s).
+- **LIVE proof (Owner rule — file must be visible in Drive):** `SYNC-SMOKE.txt` **created** in the Drive run-journals folder, file id `1JO-_5dfA6WLKHx8dhvSbAf60crGFZXqg`, 2026-08-17T22:52:40Z, owner chrispcariello@gmail.com, 73 B — a CREATE the service account could never perform (storageQuotaExceeded).
+- **GCP:** project `autonomy-system-sync`, Google Auth Platform app `autonomy-sync` published to **production** (no 7-day token expiry, no test-user wall). OAuth client `autonomy-sync-desktop` (Desktop). Client secret rotated during setup; superseded first secret disabled and deleted — only the live secret remains.
+- **Fallback:** GOOGLE_SERVICE_ACCOUNT_JSON path remains in the workflow as update-only fallback.
+- **Hygiene:** local credential artifacts (client_secret json, id part file, one-shot runner) deleted from Owner Downloads; clipboard cleared; no secret values ever entered chat, logs, or repo.
+
+This section written same-session as the events it records; the push carrying it re-triggers the sync workflow, so this file's Drive copy self-updates as the final proof loop.
