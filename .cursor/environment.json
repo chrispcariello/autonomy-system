@@ -1,0 +1,4 @@
+{
+  "name": "autonomy-system",
+  "install": "pip install --quiet --upgrade google-auth google-api-python-client"
+}
