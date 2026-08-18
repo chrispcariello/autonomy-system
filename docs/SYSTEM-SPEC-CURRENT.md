@@ -1,6 +1,6 @@
-# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.9
-**Date:** 2026-08-17  
-v4.1.9 mirrors the Credit-Aware Routing body into this SPEC; v4.1.8 added Shared visibility + version control (GitHub canonical, Drive mirror); v4.1.7 added the Durable storage rule.
+# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.10
+**Date:** 2026-08-18  
+v4.1.10 makes the local Grok CLI the default Grok Heavy critique path (browser grok.com is the fallback); v4.1.9 mirrored the Credit-Aware Routing body into this SPEC; v4.1.8 added Shared visibility + version control (GitHub canonical, Drive mirror); v4.1.7 added the Durable storage rule.
 
 ---
 
@@ -63,6 +63,14 @@ Each team runs 3–5 single-responsibility sub-agents. Infrastructure (Event Bus
 - Claude Code worktrees
 - Grok Build bridge
 - Claude Cowork live surface
+
+### Grok CLI bridge (default critique path)
+
+- **Default:** critique calls run one-shot on the Owner-machine local shell — `grok -m grok-4.5 -p "<critique prompt>"` (CLI model id per `grok models`; grok-4.5 = Heavy 4.5 tier equivalence assumed from the models list, not independently verified) — which prints the response to stdout and exits (Grok Build TUI 1.0.3, `C:\Users\chris\.grok\bin`, logged in with grok.com; live round-trip verified 2026-08-18).
+- **Transport & actor:** the orchestrating Claude session (Fable gate surface) invokes the CLI through the Owner-machine local shell bridge — the same proven channel as Tier 2 landings (see docs/LANDING-PROTOCOL.md); prompt text passes as one quoted argument.
+- **Volume work** may use `-m grok-4.6` (CLI default model); critique stays on grok-4.5.
+- **Fallback:** browser automation to grok.com, triggered when a CLI call fails twice consecutively (non-zero exit, >120s timeout, or auth error); the orchestrator flips the path and records the flip in the run journal.
+- Unchanged: Grok output still lands UNVERIFIED and carries no write authority (Hard Rules unchanged).
 
 ---
 
@@ -229,4 +237,5 @@ There is no silent mid-call API for exact Claude or Grok percentages. The browse
 - **v4.1.6** — FIXED (hygiene): history completed; Design Goal, Main Coordinator, Hard Rule 1 and Model Routing aligned to the v4.1.5 split; reset timezone America/New_York (in FOR-CLAUDE package)
 - **v4.1.7** — ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
 - **v4.1.8** — ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
-- **v4.1.9** — (this document) ADDED: Credit-Aware Routing body mirrored from the FOR-CLAUDE package (was history-only in this SPEC since the v4.1.4 row): CREDIT-CHECK note posted by Cowork to the Event Bus as UNVERIFIED, Claude and Grok threshold modes with the full Recommendation enum, Grok Build delegation strategies, standing order for Cowork, weekly reset Sunday 9:00 PM America/New_York. No substantive rule changes
+- **v4.1.9** — ADDED: Credit-Aware Routing body mirrored from the FOR-CLAUDE package (was history-only in this SPEC since the v4.1.4 row): CREDIT-CHECK note posted by Cowork to the Event Bus as UNVERIFIED, Claude and Grok threshold modes with the full Recommendation enum, Grok Build delegation strategies, standing order for Cowork, weekly reset Sunday 9:00 PM America/New_York. No substantive rule changes
+- **v4.1.10** — (this document) CHANGED: the Grok Heavy critique path now defaults to the local one-shot Grok CLI on the Owner machine (`grok -m grok-4.5 -p "<critique prompt>"`, Grok Build TUI 1.0.3, grok.com login, verified 2026-08-18); volume work may use `-m grok-4.6`; browser grok.com demoted to FALLBACK. Mechanism block mirrored verbatim from the FOR-CLAUDE package into Shared Infrastructure. Grok output still lands UNVERIFIED with no write authority; Hard Rules unchanged

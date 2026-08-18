@@ -1,4 +1,4 @@
-# SYSTEM v4.1.9 — PACKAGE FOR CLAUDE
+# SYSTEM v4.1.10 — PACKAGE FOR CLAUDE
 
 Source of truth for the Autonomous Multi-Agent System.
 
@@ -99,6 +99,14 @@ Superseded files go to AUTONOMY-SYSTEM/delete-me/.
 | Critique | Grok Heavy | Grok Heavy 4.5 |
 | Discovery | Grok Heavy + Code | Heavy 4.5 + Opus 5 |
 
+### Grok CLI bridge (default critique path)
+
+- **Default:** critique calls run one-shot on the Owner-machine local shell — `grok -m grok-4.5 -p "<critique prompt>"` (CLI model id per `grok models`; grok-4.5 = Heavy 4.5 tier equivalence assumed from the models list, not independently verified) — which prints the response to stdout and exits (Grok Build TUI 1.0.3, `C:\Users\chris\.grok\bin`, logged in with grok.com; live round-trip verified 2026-08-18).
+- **Transport & actor:** the orchestrating Claude session (Fable gate surface) invokes the CLI through the Owner-machine local shell bridge — the same proven channel as Tier 2 landings (see docs/LANDING-PROTOCOL.md); prompt text passes as one quoted argument.
+- **Volume work** may use `-m grok-4.6` (CLI default model); critique stays on grok-4.5.
+- **Fallback:** browser automation to grok.com, triggered when a CLI call fails twice consecutively (non-zero exit, >120s timeout, or auth error); the orchestrator flips the path and records the flip in the run journal.
+- Unchanged: Grok output still lands UNVERIFIED and carries no write authority (Hard Rules unchanged).
+
 ## Efficiency rules
 
 1. Parallel fan-out by default
@@ -194,4 +202,5 @@ Grok Bot Layer (Phase 1) — specified, deferred, not cancelled. Phase 2.
 - **v4.1.6** — FIXED (hygiene): v4.1.4 history row restored; Hard Rule 7 enforcement clause restored; CREDIT-CHECK enum now covers every threshold mode (STOP_LONG_RUNS removed as redundant with CONSERVE_BOTH); weekly reset timezone stated (America/New_York); v4.1.3 cost-caveat entry marked superseded; SPEC aligned to Fable/Opus split
 - **v4.1.7** — ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
 - **v4.1.8** — ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
-- **v4.1.9** — (this document) ADDED (SPEC-side): SYSTEM-SPEC-CURRENT.md now carries the Credit-Aware Routing body (CREDIT-CHECK note, Claude/Grok threshold modes and Recommendation enum, Grok Build delegation strategies, standing order, weekly reset) mirrored from this package; this document's Credit-Aware Routing section is unchanged. Hygiene only, no substantive rule changes
+- **v4.1.9** — ADDED (SPEC-side): SYSTEM-SPEC-CURRENT.md now carries the Credit-Aware Routing body (CREDIT-CHECK note, Claude/Grok threshold modes and Recommendation enum, Grok Build delegation strategies, standing order, weekly reset) mirrored from this package; this document's Credit-Aware Routing section is unchanged. Hygiene only, no substantive rule changes
+- **v4.1.10** — (this document) CHANGED: the Grok Heavy critique path now defaults to the local one-shot Grok CLI on the Owner machine (`grok -m grok-4.5 -p "<critique prompt>"`, Grok Build TUI 1.0.3, grok.com login, verified 2026-08-18); volume work may use `-m grok-4.6`; browser grok.com demoted to FALLBACK. Grok output still lands UNVERIFIED with no write authority; Hard Rules unchanged
