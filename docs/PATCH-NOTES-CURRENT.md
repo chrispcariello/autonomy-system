@@ -128,3 +128,13 @@ retrieval_ref `LM-RET-2026-08-18T00:04Z-D` (orchestration-memory@9d8202ad0a1a, r
 - [x] Open items — v4.1.9's 10 stand unchanged; ONE ADDED this pass: desktop add-repo-to-existing-session picker is defective (OAuth registration errors refs ofid_c89a3ea091e63676 / ofid_6905a097c17ba275, then "Connection to server failed" ×3, 2026-08-17 eve, app 1.32352.0; status page green throughout — app-side flow, not platform); workaround = attach repo at session creation, or Owner-local git; Owner: Chris (report to Anthropic support with both ofid refs); exit: repo successfully added to an EXISTING session
 
 Routing this smoke: Fable gated/routed only; one Opus unit; one Grok Heavy call (second of the evening). Grok challenged same-evening repeat value as checkbox theater — logged; claimed info gain this pass = picker defect recorded with owner/exit + loop repeatability under one-click landing.
+
+## Landing protocol addendum — 2026-08-18
+
+retrieval_ref `LM-RET-2026-08-18T00:04Z-D` carried forward — Fable gated, Opus executed. Owner order: the system must work end to end from any session without effort from him.
+
+- ADDED `tools/land.ps1` + `docs/LANDING-PROTOCOL.md` — the three landing tiers, ff-only throughout, no force-push anywhere.
+- Standing clone `C:\Users\chris\autonomy-system-live` is now infrastructure, not a one-off: Owner's cached Git Credential Manager credentials, clone + ls-remote verified 2026-08-17 evening.
+- Sandbox-proxy credential probe recorded: the proxy refuses a non-attached repo BEFORE reading credentials (403 from the proxy on a dummy token, not 401 from GitHub) — an externally supplied token cannot buy a push. The repo must be attached at session creation.
+- Manual .bat clicking is retired to Tier 3 fallback. Claude performs the landing itself whenever one is needed.
+- This very commit is the first zero-touch landing (Tier 2) — no Owner action. No package version change: infra-only, precedent = the OAuth sync commits.
