@@ -138,3 +138,12 @@ retrieval_ref `LM-RET-2026-08-18T00:04Z-D` carried forward — Fable gated, Opus
 - Sandbox-proxy credential probe recorded: the proxy refuses a non-attached repo BEFORE reading credentials (403 from the proxy on a dummy token, not 401 from GitHub) — an externally supplied token cannot buy a push. The repo must be attached at session creation.
 - Manual .bat clicking is retired to Tier 3 fallback. Claude performs the landing itself whenever one is needed.
 - This very commit is the first zero-touch landing (Tier 2) — no Owner action. No package version change: infra-only, precedent = the OAuth sync commits.
+
+## Loop test — native push (2026-08-18)
+
+retrieval_ref `LM-RET-2026-08-18T01:16Z-Q` (lessons L-20260817-01…06 all read; run-journal tail through 01:20 infra_landing_fix) — Fable gate, Opus unit draft.
+
+- Purpose: prove NATIVE PUSH to origin/main from a web-created, repo-attached session — the exit criterion recorded in the roadmap (record 34) and the standing platform constraint noted in the 2026-08-18 smoke (source binding happens at session creation). Session branch env is present, but the Owner task orders push to main.
+- State at run start: base = c6e632a, origin/main identical; specguard baseline unchanged (SYSTEM-CURRENT 3 findings [2 FAIL, 1 ADVISORY] accepted residuals; SPEC 1 [0 FAIL, 1 ADVISORY]).
+- Push outcome not claimed here; journal + Summary Report carry it after observation — no Actions run and no Drive sync is asserted by this section.
+- Open items: v4.1.9's list (10) plus the smoke-added desktop picker defect stand unchanged by this test — none closed, none added.
