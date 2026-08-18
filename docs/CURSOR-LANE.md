@@ -1,7 +1,7 @@
 # CURSOR-LANE.md — the second builder pool
 
 **What it is.** Cursor Ultra background agents, working this repo on branches and opening pull
-requests — approved, ACTIVATION PENDING (nothing dispatched yet; see Status below). It is a BUILDER
+requests — ACTIVE since 2026-08-18 (see Status below). It is a BUILDER
 pool for volume — never a gate, never an authority, and never a replacement
 for a Claude execution session on rule work.
 
@@ -12,10 +12,15 @@ can verify this at that URL. (2) Owner report, 2026-08-18 — Chris found the bu
 accounts the same day. Source (2) is OWNER-REPORTED and unverified by this system; source (1) is
 independently verifiable. If Heavy lapses, the $0 assumption dies with it.
 
-**Status: CONNECTED, ACTIVATION PENDING.** Accounts are paired and GitHub is connected per Owner
-report (2026-08-18). No dispatch has been made and no Cursor PR exists, so the lane has still never
-been exercised: connection is not activation. It becomes active when a pilot PR clears the full review
-lane — PATCH-NOTES open item 15, whose Exit is unchanged by the connection.
+**Status: ACTIVE — activated 2026-08-18 on evidence.** The pilot cleared the complete lane: agent
+`bc-88581fe2-6b2c-4b2c-b6d0-eae91640652a` opened **PR #2** (`docs/CURSOR-PILOT.md`, in scope);
+`verify-docs` **SUCCEEDED on the PR, Actions run 32196858563** — the first CI conclusion this lane
+produced; Grok gave a batched routine critique (cli, exit 0, 150s, 6 bullets, all applied, journal
+record 55); and a Claude gate merged it as **5ce249f**. PATCH-NOTES open item 15 is CLOSED on that
+stack, with dispatch records 56 and 57. **PR #1 was CLOSED, not merged** — out of scope
+(`.cursor/environment.json`) with zero completed checks; its content was re-landed Claude-authored.
+The lane's first live decision enforced its own rules. ACTIVE means exercised once, not proven: see
+Honest limits below.
 
 ## Owner setup checklist (Owner-hands only — Hard Rule 6: accounts and credentials)
 
@@ -24,17 +29,16 @@ lane — PATCH-NOTES open item 15, whose Exit is unchanged by the connection.
 - [x] **Connect Cursor's GitHub access** to `chrispcariello/autonomy-system`. *DONE per Owner report,
   2026-08-18 — one transient "Could not resolve default branch" error during the connect, which then
   resolved.* No Claude session performed either step: both are account/credential actions.
-- [ ] **URGENT — verify in Cursor settings that its GitHub access is scoped to branches and PRs**; if
-  it can push `main` directly, restrict it. *Owner, about one minute.* Urgent because **the grant is
-  LIVE NOW while the lane is unactivated — the wire is not dark.** "No dispatch yet" limits what the
-  lane has DONE, not what the credential CAN do, and this repo has NO branch protection, so this
-  scoping is currently the only thing standing between a misconfigured agent and `main`.
-- [ ] **Owner decision — branch protection.** Part of activation, not a detail: either (a) a GitHub
-  ruleset requiring pull requests, with a bypass allowance for the Owner's own landing paths (Tier 1
-  and Tier 2 both push `main` directly), or (b) keep manual-gate merging plus a strictly scoped
-  Cursor grant. PENDING — nothing was configured this cycle and no protection is claimed.
-- [ ] **Pilot dispatch + PR through the full review lane.** NOT DONE — this is the activation
-  evidence, not the connection above.
+- [x] **Scope the Cursor GitHub app** — DONE 2026-08-18 by the gate courier: narrowed from ALL
+  repositories to `autonomy-system` only. The grant was live from the moment it was created, so this
+  was closed before the first dispatch, not after.
+- [x] **Branch protection — DECIDED and CONFIGURED 2026-08-18:** option (a). Ruleset
+  **protect-main-cursor-lane** is Active — `main` requires pull requests; bypass = Repository admin +
+  Claude app, always-allow; only that one rule, with the deletion and force-push toggles deliberately
+  left off. The gate merge 5ce249f is itself the proof that the bypass works, so Tier 1/Tier 2
+  landings are not blocked.
+- [x] **Pilot dispatch + PR through the full review lane** — DONE 2026-08-18: PR #2, CI run
+  32196858563 green, Grok critique record 55, gate merge 5ce249f.
 
 ## Dispatch procedure
 
@@ -71,18 +75,22 @@ lane — PATCH-NOTES open item 15, whose Exit is unchanged by the connection.
   and the hard stops — money, ledgers, credentials, third parties — bind every lane, not only
   Claude's.
 
-## Pilot (defined, NOT yet run)
+## Pilot — RUN AND MERGED 2026-08-18
 
-First dispatch is one bounded, low-risk, docs-only task — e.g. generating a history index page of
-past `LATEST-HANDOFF` blocks from the run journal. **Success = that PR passes all three legs and
-merges.** Measure three things: output quality against the definition of done, turnaround time, and
-whatever usage limits Ultra actually reveals under load. Those limits are UNKNOWN today; they stay
-recorded as unknown until a run measures them.
+The first dispatch was one bounded, low-risk, docs-only task: a lane self-introduction,
+`docs/CURSOR-PILOT.md`. It passed all three legs — CI run 32196858563 green, Grok batched routine
+critique (record 55), gate merge 5ce249f — so the success condition set before the run was met, not
+redefined after it. Of the three things the pilot was meant to measure: **output quality** was good
+(in scope, correct rules restated in the agent's own words, its own retrieval_ref included);
+**turnaround** was same-day; **usage limits stay UNKNOWN** — Cursor ran this pilot on Auto with its
+usage-limits banner showing, so nothing here measures what Ultra actually allows under load. That
+third measurement is still owed.
 
 ## Honest limits
 
 Usage caps are unmeasured, and the $0 bundle lasts only as long as Heavy stays active — if Heavy
-lapses, the lane's cost assumption dies with it. A third brand adds coordination surface, mitigated
-by keeping the interchange GitHub-only: branches and PRs, no shared session state, no second source
-of truth. If the lane underperforms, retiring it costs one doc edit and zero refactoring — nothing
-else in the system depends on it.
+lapses, the lane's cost assumption dies with it. One merged pilot is not a track record: no Cursor PR
+has yet been rejected on QUALITY (PR #1 was closed on SCOPE), so the lane's failure modes are still
+untested. A third brand adds coordination surface, mitigated by keeping the interchange GitHub-only:
+branches and PRs, no shared session state, no second source of truth. If the lane underperforms,
+retiring it costs one doc edit and zero refactoring — nothing else in the system depends on it.

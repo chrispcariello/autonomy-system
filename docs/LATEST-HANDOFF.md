@@ -14,30 +14,30 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 ```
 HANDOFF
 SHA: the commit carrying this file — verify with git log -1. A file cannot contain its own landing
-  SHA, and a predicted SHA is exactly the claim HANDOFF-FORMAT.md forbids.
+  SHA, and a predicted SHA is exactly the claim HANDOFF-FORMAT.md forbids. Parent: 5ce249f.
 Drive: pending this landing's sync — content strings to check are listed in the run report. Not
-  verified at write time; an advanced modifiedTime alone would not verify it either.
-Changed: docs/SYSTEM-CURRENT.md + docs/SYSTEM-SPEC-CURRENT.md (v4.1.13 titles, SPEC intro, history
-  rows, byte-identical 8-line "### Efficiency mode (Fable bookends)" block) · docs/EFFICIENCY-MODE.md,
-  docs/RUN-TEMPLATE.md, docs/CURSOR-LANE.md, docs/LATEST-HANDOFF.md (all new) ·
-  docs/LANDING-PROTOCOL.md (+2 invariants: Tiers 1/2 are Claude-authored only; every landing refreshes
-  this file) · CLAUDE.md (+3 pointer blocks) · docs/GROK.md (transport sentence names the run's
-  orchestrating session) · docs/run-journals/INTERCONNECT.md (Cursor no longer deferred) ·
-  docs/PATCH-NOTES-CURRENT.md (v4.1.13 addendum, open item 15, superseded note on the v4.1.11
-  free-tools entry) · tools/validate_journal.py (cursor_dispatch + gate_ratification key checks, 2 new
-  self-test fixtures) · .github/workflows/verify.yml (pull_request trigger unfiltered; push keeps its
-  path filter) · docs/run-journals/run-journal.jsonl (patch_v4.1.13 + ladder records 52/53/54)
+  verified at write time; an advanced modifiedTime alone would not verify it either. The PREVIOUS
+  landing's Drive check is likewise unrecorded here — do not infer it from this one.
+Changed: .cursor/environment.json (new, CLAUDE-AUTHORED replacement for the closed PR #1: pip install
+  --quiet google-auth google-api-python-client, no --upgrade, matching sync-docs-to-drive.yml) ·
+  docs/PATCH-NOTES-CURRENT.md (open item 15 CLOSED on evidence with the full stack; new "## Cursor
+  lane activation — 2026-08-18" addendum; count line superseded to 15 listed / 12 open) ·
+  docs/CURSOR-LANE.md (status CONNECTED→ACTIVE with evidence pointers; three checklist boxes checked —
+  app scoped, ruleset configured, pilot merged; pilot section rewritten to what was actually measured;
+  honest limits kept and extended) · docs/LATEST-HANDOFF.md (this baton) ·
+  docs/run-journals/run-journal.jsonl (records 55 grok_critique batched, 56 cursor_dispatch merged,
+  57 cursor_dispatch closed_out_of_scope)
 Significant: yes
-Grok passes requested: 3 — ladder COMPLETE via CLI: Pass 1 defects 8/7 (288s), Pass 2 false-green 8/7
-  (163s), Pass 3 adversarial 8/5 (381s); 24 bullets, 19 applied, 5 rejected, no empty pass
-Open items: 15 listed, 13 open. None closed this run. NEW item 15 — Cursor lane activation: accounts
-  paired and GitHub connected per Owner report 2026-08-18, but the lane is UNACTIVATED (no dispatch,
-  no PR). Owner: scope the GitHub grant (URGENT — the grant is live now) and decide branch protection
-  (ruleset vs manual-gate merging), both PENDING; Exit: the first Cursor PR passes the full review
-  lane and merges with a journaled cursor_dispatch record. Item 13 (Review-gate SPOF) stays open and
-  unwaived; the Owner's existing xAI key is recorded as AVAILABLE-not-wired against it.
-Ask Grok: efficiency mode is written but unproven — no run has executed under it, the ≤5% Fable-token
-  target has no meter, and gate_ratification is required by prose that nothing mechanically enforces.
-  On the first real bookend run, what single observation would prove the gate actually ratified rather
-  than rubber-stamped, and what would that observation look like if it were faked?
+Grok passes requested: 1 — routine, batched over both open PRs: cli, exit 0, 150s, 6 bullets, all 6
+  APPLIED, 0 rejected (record 55). The v4.1.13 rule change itself already took the full 3-pass ladder
+  (records 52/53/54) in the parent commit.
+Open items: 15 listed, 12 open. CLOSED this run: item 15 (Cursor lane activation) on evidence — PR #2
+  through the complete lane (CI run 32196858563 green + Grok critique + gate merge 5ce249f), dispatch
+  records 56/57, app scoped to one repo, ruleset protect-main-cursor-lane active with its bypass
+  proven by the gate merge itself. PR #1 CLOSED not merged (out of scope, zero checks) — the lane's
+  first live decision enforced its own rules. Item 13 (Review-gate SPOF) stays open and unwaived.
+Ask Grok: the lane has now passed once and been enforced once — but PR #1 was stopped on SCOPE, not
+  on QUALITY, and the pilot ran on Auto so Ultra's real limits are still unmeasured. What is the
+  cheapest next dispatch that would force a QUALITY rejection to happen (or prove it cannot), and
+  what would the journal have to contain for that rejection to be believable rather than staged?
 ```
