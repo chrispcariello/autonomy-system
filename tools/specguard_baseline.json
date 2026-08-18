@@ -1,0 +1,39 @@
+{
+  "_generated": "2026-08-18",
+  "_note": "ACTUAL specguard findings as of the v4.1.12 landing - NOT a clean sheet. These are the accepted residuals (pooled Fable/Opus budget FAILs, two keyword-heuristic advisories). verify-docs compares each run against this file and fails ONLY on findings that are not here, or that appear more times than here. Match key is check+severity+message (line numbers deliberately excluded: they shift with every doc edit). Regenerate deliberately, never to silence a new finding: python3 tools/specguard.py --spec <file> --json.",
+  "_repo_state": "v4.1.12 draft on top of c8d8884",
+  "files": {
+    "docs/SYSTEM-CURRENT.md": {
+      "advisory": 1,
+      "fail": 2,
+      "findings": [
+        {
+          "check": "model-budget-collapsed",
+          "message": "Fable + Opus are separately-budgeted models with different roles but share one figure/threshold here: ### Claude thresholds (Fable / Opus weekly)",
+          "severity": "FAIL"
+        },
+        {
+          "check": "model-budget-collapsed",
+          "message": "Fable + Opus are separately-budgeted models with different roles but share one figure/threshold here: Claude Fable/Opus weekly: ~XX% used (~YY% remaining) · reset Sunday 9:00 PM America/New_Yo",
+          "severity": "FAIL"
+        },
+        {
+          "check": "section-not-in-history",
+          "message": "section 'Hierarchy' (17 lines) is not referenced by any Version History entry [keyword heuristic]",
+          "severity": "ADVISORY"
+        }
+      ]
+    },
+    "docs/SYSTEM-SPEC-CURRENT.md": {
+      "advisory": 1,
+      "fail": 0,
+      "findings": [
+        {
+          "check": "section-not-in-history",
+          "message": "section 'Layers' (65 lines) is not referenced by any Version History entry [keyword heuristic]",
+          "severity": "ADVISORY"
+        }
+      ]
+    }
+  }
+}

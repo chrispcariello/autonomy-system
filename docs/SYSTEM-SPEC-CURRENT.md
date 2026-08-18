@@ -1,6 +1,6 @@
-# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.11
+# AUTONOMOUS MULTI-AGENT SYSTEM — SPECIFICATION v4.1.12
 **Date:** 2026-08-18  
-v4.1.11 adds the Critique policy (routine 1-pass / significant 3-pass ladder); v4.1.10 made the local Grok CLI the default critique path; v4.1.9 mirrored the Credit-Aware Routing body into this SPEC.
+v4.1.12 adds Review-gate availability (BLOCKED_ON_CRITIQUE when no critique transport is actually running); v4.1.11 added the Critique policy (routine 1-pass / significant 3-pass ladder); v4.1.10 made the local Grok CLI the default critique path.
 
 ---
 
@@ -245,6 +245,13 @@ Critique frequency is an efficiency dial; critique depth is not. The rule is fix
 - Pre-land critique of a significant patch reviews pasted excerpts + diff hunks (the mirror still shows the previous version); post-land, the public Drive links are the artifact. Both modes are valid; say which was used.
 - Nightly hygiene is routine by construction (appends + one reversible cleanup). If a nightly run would touch the SYSTEM-CURRENT or SYSTEM-SPEC-CURRENT body or any system rule, it STOPS and defers to an attended run — nightly never lands significant changes.
 
+### Review-gate availability
+- Significant work MUST NOT be marked PASS or CLOSED without its required `grok_critique` records in `docs/run-journals/run-journal.jsonl` — 1 record for routine, 3 for the ladder. Missing records = the work is not reviewed, whatever the prose says.
+- If the Grok CLI is unavailable AND no browser session is running, the status is **BLOCKED_ON_CRITIQUE**: the work stages, nothing false-greens, and the queue clears only when critique actually runs and its dispositions are journaled.
+- HONESTY: the browser fallback still requires a running Owner session on a running Owner machine. Owner PC off = BOTH default paths are down = BLOCKED_ON_CRITIQUE is the only honest status; "fallback exists" is not availability.
+- The Owner may journal an accepted-risk line for temporary CLI-only operation (PATCH-NOTES open item 13). That waiver AUTO-REOPENS the moment significant work waits for critique while the Owner machine is offline.
+- A second independent critique transport stays Owner-escalated: any transport needing credentials or spend is Hard Rule 6 — proposed to the Owner, never self-activated. No paid xAI API is adopted here.
+
 The copy-ready prompt blocks and the required Grok output shape live in `docs/GROK.md`.
 
 ---
@@ -270,4 +277,5 @@ The copy-ready prompt blocks and the required Grok output shape live in `docs/GR
 - **v4.1.8** — ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
 - **v4.1.9** — ADDED: Credit-Aware Routing body mirrored from the FOR-CLAUDE package (was history-only in this SPEC since the v4.1.4 row): CREDIT-CHECK note posted by Cowork to the Event Bus as UNVERIFIED, Claude and Grok threshold modes with the full Recommendation enum, Grok Build delegation strategies, standing order for Cowork, weekly reset Sunday 9:00 PM America/New_York. No substantive rule changes
 - **v4.1.10** — CHANGED: the Grok Heavy critique path now defaults to the local one-shot Grok CLI on the Owner machine (`grok -m grok-4.5 -p "<critique prompt>"`, Grok Build TUI 1.0.3, grok.com login, verified 2026-08-18); volume work may use `-m grok-4.6`; browser grok.com demoted to FALLBACK. Mechanism block mirrored verbatim from the FOR-CLAUDE package into Shared Infrastructure. Grok output still lands UNVERIFIED with no write authority; Hard Rules unchanged
-- **v4.1.11** — (this document) ADDED: Critique policy (routine = 1 focused Grok Heavy pass; significant = 3-pass ladder defects/false-green/final-adversarial; major-finding definition; apply-or-reject with journaled one-line reasons; LGTM/empty = FAIL; pass non-overlap; significant-definition narrowing only by Owner order; pre-land/post-land artifact modes; nightly is routine-only and never lands significant changes) + interconnect/hygiene doc set (GROK.md, HANDOFF-FORMAT.md, OWNER-QUICK-REFERENCE.md, INTERCONNECT.md, NIGHTLY-HYGIENE.md + nightly-checklist.json, CLAUDE.md update). Version renumbered from a v4.1.10 collision with the Grok-CLI-bridge patch that landed first the same morning; reconciled, no rules lost
+- **v4.1.11** — ADDED: Critique policy (routine = 1 focused Grok Heavy pass; significant = 3-pass ladder defects/false-green/final-adversarial; major-finding definition; apply-or-reject with journaled one-line reasons; LGTM/empty = FAIL; pass non-overlap; significant-definition narrowing only by Owner order; pre-land/post-land artifact modes; nightly is routine-only and never lands significant changes) + interconnect/hygiene doc set (GROK.md, HANDOFF-FORMAT.md, OWNER-QUICK-REFERENCE.md, INTERCONNECT.md, NIGHTLY-HYGIENE.md + nightly-checklist.json, CLAUDE.md update). Version renumbered from a v4.1.10 collision with the Grok-CLI-bridge patch that landed first the same morning; reconciled, no rules lost
+- **v4.1.12** — (this document) ADDED: Review-gate availability (significant work cannot be marked PASS/CLOSED without its `grok_critique` records; BLOCKED_ON_CRITIQUE when the Grok CLI is unavailable and no browser session is running; the Owner-PC-off honesty clause; an Owner accepted-risk waiver that auto-reopens when significant work waits while that machine is offline; a second independent transport stays Owner-escalated under Hard Rule 6, no paid xAI API) + verification pack (`tools/validate_journal.py`, `.github/workflows/verify.yml` with a committed specguard baseline and a self-non-matching secret scan) + `docs/GROK.md` critique queue and `critique_blocked` record shape + the post-land Drive CONTENT-check invariant; PATCH-NOTES open item 14 CLOSED on the landed c8d8884 evidence stack

@@ -93,16 +93,66 @@ false-green, `3` adversarial) · `model` (`"grok-4.5"`) · `transport` (`"cli"` 
 `exit_code` (int) · `duration_s` (int) · `bullets_count` (int) · `applied`
 (`[{"b": <bullet #>, "reason": "one line"}]`) · `rejected` (same shape) · `retrieval_ref`.
 
+Below is an **illustrative example, not a real record** — its `retrieval_ref` is a placeholder, so no
+reader or critique pass can mistake this line for landed evidence:
+
 ```json
-{"ts":"2026-08-18T11:52:00Z","type":"grok_critique","status":"VERIFIED","target":"docs/PATCH-NOTES-CURRENT.md REMAINING OPEN ITEMS 2/5/6","pass":1,"model":"grok-4.5","transport":"cli","exit_code":0,"duration_s":78,"bullets_count":6,"applied":[{"b":2,"reason":"exit criterion was unobservable - rewritten as a pass/fail fixture"}],"rejected":[{"b":5,"reason":"asks for tooling - docs-only cycle, folded into open item 2"}],"retrieval_ref":"LM-RET-2026-08-18T11:38Z-E"}
+{"ts":"2026-08-18T11:52:00Z","type":"grok_critique","status":"VERIFIED","target":"docs/PATCH-NOTES-CURRENT.md REMAINING OPEN ITEMS 2/5/6","pass":1,"model":"grok-4.5","transport":"cli","exit_code":0,"duration_s":78,"bullets_count":6,"applied":[{"b":2,"reason":"exit criterion was unobservable - rewritten as a pass/fail fixture"},{"b":3,"reason":"missing owner added"}],"rejected":[{"b":5,"reason":"asks for tooling - docs-only cycle, folded into open item 2"},{"b":1,"reason":"minor style, batched"},{"b":4,"reason":"minor style, batched"},{"b":6,"reason":"minor style, batched"}],"retrieval_ref":"LM-RET-EXAMPLE-0000"}
 ```
 
-- **Silence on a major bullet is not a decision.** Every major bullet lands in `applied` or `rejected`
-  with its one-line reason; minor style bullets may be batched or omitted.
+- **Silence on ANY bullet is not a decision.** Every bullet returned by the pass lands in `applied` or
+  `rejected` with a one-line reason — majors individually, minors optionally BATCHED under one shared
+  reason string (`"minor style, batched"`) but still one entry per bullet, so the arithmetic holds:
+  `len(applied) + len(rejected) == bullets_count`, always. A record that drops bullets is a FAIL, and
+  `tools/validate_journal.py --journal` fails the build on it.
 - **An empty or "LGTM" critique on significant work is recorded, not swallowed:** `bullets_count` 0 and
   `status` `"FAIL"`. It does not count as a pass — re-scope, re-ask, and write a second record.
 - **A browser-fallback flip sets `transport` `"browser"`** in that record, so the flip is visible where
   the critique is, not only in prose.
+
+## Review-gate availability (queue + honest fallback)
+
+The rule lives in both package files under `## Critique policy` → `### Review-gate availability`. This
+section is the mechanics.
+
+**Both default transports need the Owner machine.** The CLI runs on it; the browser fallback needs a
+logged-in grok.com session on it. Owner PC off = both paths down. There is no third path today, and a
+paid xAI API bridge is Owner-escalated only (credentials + spend = Hard Rule 6).
+
+**When no transport is reachable, critique QUEUES — it is never skipped and never assumed.** The work
+stages (committed to a branch or left uncommitted, but not landed as PASS/CLOSED), and the run reports
+`BLOCKED_ON_CRITIQUE`. One record per blocked target, appended to `docs/run-journals/run-journal.jsonl`:
+
+```json
+{"ts":"2026-08-18T02:10:00Z","type":"critique_blocked","status":"BLOCKED","target":"docs/SYSTEM-CURRENT.md + SPEC v4.1.x Review-gate block (significant, ladder required)","waiting_since":"2026-08-18T02:10:00Z","staged":"branch wip/review-gate @ <sha>, not landed; 0 of 3 ladder passes run","transport_attempted":["cli","browser"],"reason":"Owner machine offline - CLI unreachable and no browser session","retrieval_ref":"LM-RET-EXAMPLE-0000"}
+```
+
+`target` names the work waiting · `waiting_since` is the first block (it does NOT reset on retries, so
+the age of the queue is visible) · `staged` says exactly where the work sits and how much of the
+required critique has run. `status` is `BLOCKED`, never `VERIFIED`.
+
+**Queue-clear procedure.** (1) A transport comes back. (2) Run the required passes for each queued
+target, oldest `waiting_since` first. (3) Append the normal `grok_critique` record per call, with the
+gate dispositions. (4) Only then may the target be marked PASS/CLOSED and landed. (5) The queue is
+clear when every `critique_blocked` target has its required records — 1 routine, 3 ladder. Clearing by
+deletion, by re-scoping the work to "routine", or by declaring it fine after the wait is a false green.
+
+**Accepted-risk waiver (Owner only, temporary).** The Owner may accept CLI-only operation rather than
+add a transport — see PATCH-NOTES open item 13. The waiver NEVER authorizes landing significant work
+without critique: it covers CLI-only operation *while the machine is up*. Machine off =
+`BLOCKED_ON_CRITIQUE` regardless of any waiver. Journal it:
+
+```json
+{"ts":"2026-08-18T02:12:00Z","type":"owner_accepted_risk","status":"VERIFIED","scope":"Review-gate transport: CLI-only, browser fallback unexercised as an independent path","accepted_by":"Owner (Chris)","expires":"auto-reopen","reopen_trigger":"any significant work in BLOCKED_ON_CRITIQUE while the Owner machine is offline","retrieval_ref":"LM-RET-EXAMPLE-0000"}
+```
+
+**Auto-reopen is not discretionary — and it is RETROACTIVE, not live.** Nothing watches while the
+Owner machine is off; no daemon, no scheduled probe, no live trigger exists or is claimed. The reopen
+is evaluated by the NEXT gate session: if significant work sat waiting for critique during any period
+the Owner machine was offline, the waiver is void *ab initio* for that period, item 13 re-opens, and
+the reopen is journaled at next contact with the waiting_since dates that voided it. So a waiver can
+never become permanent by silence — but the reopen appears when someone next looks, not the moment it
+was earned. Both JSON lines above are illustrative examples, not real records.
 
 ## Required Grok output shape
 

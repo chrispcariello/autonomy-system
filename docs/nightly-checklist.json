@@ -1,5 +1,5 @@
 {
-  "version": "v4.1.11",
+  "version": "v4.1.12",
   "schedule_utc": "30 1 * * *",
   "schedule_note": "01:30 UTC daily = 9:30 PM EDT; becomes 8:30 PM ET in EST months unless the Owner adjusts it",
   "max_minutes": 20,
@@ -20,7 +20,7 @@
     },
     {
       "id": "c",
-      "title": "Run specguard on docs/SYSTEM-CURRENT.md and docs/SYSTEM-SPEC-CURRENT.md; record counts and the delta vs last night",
+      "title": "Run specguard on docs/SYSTEM-CURRENT.md and docs/SYSTEM-SPEC-CURRENT.md, and tools/validate_journal.py --all alongside it; record counts, the validator exit code, and the delta vs last night",
       "required": true,
       "on_fail": "record the error or the new FAILs verbatim; do not edit rules to silence the linter; continue"
     },

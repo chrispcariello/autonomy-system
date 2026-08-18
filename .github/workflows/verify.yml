@@ -1,0 +1,102 @@
+name: verify-docs
+
+# Mechanical gate for the docs + tooling surface. It never edits anything and never
+# claims a clean sheet: specguard is compared against a COMMITTED baseline of the real
+# current findings, so only NEW findings fail the run.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'tools/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'tools/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validator self-test
+        run: python tools/validate_journal.py --self-test
+
+      - name: Journal + open items + package sections
+        run: python tools/validate_journal.py --all
+
+      - name: specguard vs committed baseline
+        run: |
+          python - <<'PY'
+          import json, subprocess, sys
+          from collections import Counter
+
+          BASELINE = "tools/specguard_baseline.json"
+          with open(BASELINE, encoding="utf-8") as handle:
+              baseline = json.load(handle)
+
+          def key(finding):
+              # line numbers are deliberately excluded: they shift on every doc edit
+              return (finding["check"], finding["severity"], finding["message"])
+
+          new_findings = []
+          for path, recorded in sorted(baseline["files"].items()):
+              proc = subprocess.run(
+                  [sys.executable, "tools/specguard.py", "--spec", path, "--json"],
+                  capture_output=True, text=True,
+              )
+              if not proc.stdout.strip():
+                  print("::error::specguard produced no JSON for %s: %s" % (path, proc.stderr.strip()))
+                  sys.exit(1)
+              current = json.loads(proc.stdout)
+              have = Counter(key(f) for f in current["findings"])
+              want = Counter(key(f) for f in recorded["findings"])
+              extra = have - want
+              print(
+                  "%s: %d findings [%d FAIL, %d ADVISORY]; baseline %d FAIL / %d ADVISORY"
+                  % (path, len(current["findings"]), current["fail"], current["advisory"],
+                     recorded["fail"], recorded["advisory"])
+              )
+              for (check, severity, message), count in sorted(extra.items()):
+                  for _ in range(count):
+                      new_findings.append((path, severity, check, message))
+
+          if new_findings:
+              for path, severity, check, message in new_findings:
+                  print("::error::NEW specguard finding %s %s in %s: %s" % (severity, check, path, message))
+              print("%d finding(s) not in the committed baseline." % len(new_findings))
+              sys.exit(1)
+
+          print(
+              "No NON-baseline specguard findings. NOTE: the baseline is not clean - it records the "
+              "accepted residuals (pooled Fable/Opus budget FAILs + two keyword-heuristic advisories). "
+              "This step proves nothing got WORSE, not that the package lints clean."
+          )
+          PY
+
+      - name: Secret scan (docs, tools, workflows)
+        run: |
+          # Every pattern below brackets one literal character, so the pattern text in this
+          # file cannot match itself and the scan never fails on its own definitions.
+          # Do not "simplify" the brackets away - that makes this step self-flagging.
+          PATTERNS='gh[p]_|gh[o]_|github[_]pat|GOCSPX[-]|BEGIN[ ].*PRIVATE[ ]KEY|AKIA[0-9A-Z]{16}|xox[bp][-]|private[_]key[_]id'
+          if grep -rInE "$PATTERNS" docs/ tools/ .github/; then
+            echo "::error::Secret-like string found above. NEVER commit tokens, keys or client secrets - rotate anything that was pushed."
+            exit 1
+          fi
+          echo "Secret scan clean: 0 hits across docs/ tools/ .github/ (8 patterns, none self-matching)."

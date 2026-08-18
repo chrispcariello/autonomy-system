@@ -39,6 +39,9 @@ For Chris. Everything you need to run the system without reading the full packag
   A bare "LGTM" from Grok counts as a FAIL on significant work, not a pass.
 - If credits are too low to run the full ladder, the significant change waits. It does not land on
   one thin pass.
+- **PC off = critique queues.** Both Grok paths (CLI and browser) need your machine, so when it is off
+  the work stages and reports `BLOCKED_ON_CRITIQUE` — it never false-greens, and it clears when a
+  critique actually runs.
 - Prompts to paste into Grok: `docs/GROK.md`.
 
 ## Nightly hygiene (runs itself)

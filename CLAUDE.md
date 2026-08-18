@@ -37,6 +37,11 @@ Pass 2 False-green → Pass 3 Final adversarial. APPLY or explicitly REJECT each
 one-line journaled reason; an "LGTM" or empty critique is a FAIL on significant work, not a pass.
 Efficiency may cut critique FREQUENCY, never DEPTH. Never hand Grok a GitHub link (private — it cannot
 open it); hand it the Drive links.
+- **Review-gate availability:** no PASS/CLOSED on significant work without its `grok_critique` records
+  (1 routine / 3 ladder). No CLI *and* no browser session (Owner PC off = both) ⇒ status
+  `BLOCKED_ON_CRITIQUE`: stage the work, journal a `critique_blocked` record, never false-green. Queue +
+  record shapes: `docs/GROK.md` → "Review-gate availability".
+- Run `python3 tools/validate_journal.py --all` before landing (CI runs it too, `verify-docs`).
 
 ## Landing rules
 - Land via the best available tier in `docs/LANDING-PROTOCOL.md` (Tier 1 native push from a session created WITH the repo attached · Tier 2 local-shell · Tier 3 one-click); say which tier you used.

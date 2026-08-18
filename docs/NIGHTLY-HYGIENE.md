@@ -36,7 +36,9 @@ this is a significant-task retrieval under Hard Rule 7 and a missing ref is a se
 **c) Run specguard.** `python3 tools/specguard.py --spec docs/SYSTEM-CURRENT.md` and
 `python3 tools/specguard.py --spec docs/SYSTEM-SPEC-CURRENT.md`. Record both finding counts
 (`N findings [X FAIL, Y ADVISORY]`) and compare them to the previous night's counts. New FAILs are the
-headline of the report; do not fix rules to make the linter quiet — report the delta.
+headline of the report; do not fix rules to make the linter quiet — report the delta. Alongside it, run
+`python3 tools/validate_journal.py --all` (stdlib, no network) and record its exit code and FAIL lines
+the same way; a non-zero exit is a headline too, not a silent skip.
 
 **d) Refresh open items.** Re-read REMAINING OPEN ITEMS in `docs/PATCH-NOTES-CURRENT.md`. **Every item
 must carry an owner and an exit criterion.** Add the missing ones. Do not close an item without
@@ -53,7 +55,7 @@ below. Every step gets its real outcome, including failures.
 (Tier 1 native push → Tier 2 local-shell → Tier 3 one-click fallback), which triggers Actions and the
 Drive mirror. Say which tier you used. **If no landing tier is available, stage the work and report
 `BLOCKED` with the reason.** Never write a green result for a push that did not happen, and never claim
-a Drive sync you did not observe. A BLOCKED first firing is a valid honest outcome (open item 12); Tier 2 may be available to unattended runs when the Owner's desktop app is online.
+a Drive sync you did not observe. A BLOCKED first firing is a valid honest outcome (open item 12); Tier 2 may be available to unattended runs when the Owner's desktop app is online. Post-land verification follows the CONTENT-check invariant in `docs/LANDING-PROTOCOL.md`: name a string this commit introduces and find it in the mirrored file — an advanced `modifiedTime` alone is not verification.
 
 ## Credit rule for this run
 
