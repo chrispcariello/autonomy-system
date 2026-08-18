@@ -115,3 +115,16 @@ retrieval_ref `LM-RET-2026-08-17T23:12Z-C` (orchestration-memory@81a2c4cbccb1, r
 - [x] Open items still listed bluntly — v4.1.9's REMAINING OPEN ITEMS list (10 items) above stands unchanged; none closed, none added, by this smoke
 
 Routing this smoke: Fable gated/routed only; one Opus unit executed (one infra bounce); one Grok Heavy critique call.
+
+## System health smoke (second pass) — 2026-08-18
+
+retrieval_ref `LM-RET-2026-08-18T00:04Z-D` (orchestration-memory@9d8202ad0a1a, repo@515990b, first-pass section + SYSTEM-CURRENT L10/L96–100) — Fable gate, echoed by Opus unit.
+
+- [x] GitHub canonical readable — fetch origin/main = 515990b at 00:04Z from cloud sandbox (the session-push 403 is a standing platform constraint — source binding happens at session creation — not a finding of this smoke); landing path = Owner one-click; actual result = this commit's presence on main
+- [x] Drive mirror verified current — PATCH-NOTES-CURRENT.md (10roA9WnUm17NL22cmONJKsnFT4L9EZS2) modified 2026-08-17T23:44:28Z carrying the first-pass section verbatim (checked via Drive API 00:06Z); this pass's sync must advance that timestamp
+- [x] Actions sync path proven this evening — first-pass run green in 29s with observed Drive write-through; this commit's own run is the re-verification
+- [x] Fable/Opus routing stated — SYSTEM-CURRENT hierarchy L10 + routing table L96–100, unchanged at v4.1.9
+- [x] Grok Heavy critique path exercised — "Heavy — Team of Experts · Grok 4.5", chat "Second Smoke Critique Reveals Failures" in Owner's Grok history, 10 bullets received, 3 applied (constraint/finding split; owner+exit added; theater objection logged)
+- [x] Open items — v4.1.9's 10 stand unchanged; ONE ADDED this pass: desktop add-repo-to-existing-session picker is defective (OAuth registration errors refs ofid_c89a3ea091e63676 / ofid_6905a097c17ba275, then "Connection to server failed" ×3, 2026-08-17 eve, app 1.32352.0; status page green throughout — app-side flow, not platform); workaround = attach repo at session creation, or Owner-local git; Owner: Chris (report to Anthropic support with both ofid refs); exit: repo successfully added to an EXISTING session
+
+Routing this smoke: Fable gated/routed only; one Opus unit; one Grok Heavy call (second of the evening). Grok challenged same-evening repeat value as checkbox theater — logged; claimed info gain this pass = picker defect recorded with owner/exit + loop repeatability under one-click landing.
