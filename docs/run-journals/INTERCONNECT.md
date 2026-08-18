@@ -63,10 +63,13 @@ Build is the same: volume in, verification by Claude before anything lands.
 
 Nothing was installed this patch and nothing needs to be: the core interconnect is docs + GitHub +
 Actions + Drive, all already live and free. For the record, the free options considered and deliberately
-deferred are — **Cursor (free tier)**: an optional human/local coding surface, useful if Chris ever wants
-to hand-edit locally, irrelevant to the autonomy core; **Composio + a Grok bot free tier**: the path to a
+deferred are — **Cursor**: NO LONGER DEFERRED. Ordered into the system by Owner order 2026-08-18
+("implement cursor now to this system") as a second BUILDER pool on the Ultra tier bundled with
+SuperGrok Heavy, not as the hand-edit surface described here — accounts connected per Owner report,
+but ACTIVATION PENDING until a pilot PR clears the review lane; mechanics in `docs/CURSOR-LANE.md`,
+activation evidence tracked as PATCH-NOTES open item 15. Still deferred: **Composio + a Grok bot free tier**: the path to a
 *toolized* Grok that could fetch and act instead of only reading and critiquing, worth activating when
 Grok genuinely needs to DO things, not before; **LangGraph (free)**: a real orchestrator graph if the
 flows ever outgrow docs + Actions, which they have not; and **GraphQL**: unnecessary for a docs and
-Event-Bus architecture with no queryable API surface — do not introduce it. All four stay unbuilt until
-an Owner order says otherwise.
+Event-Bus architecture with no queryable API surface — do not introduce it. Those three stay unbuilt until
+an Owner order says otherwise; Cursor is the one that got such an order.

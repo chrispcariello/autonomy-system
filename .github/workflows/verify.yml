@@ -12,11 +12,10 @@ on:
       - 'docs/**'
       - 'tools/**'
       - '.github/workflows/**'
+  # Deliberately UNFILTERED: every pull request runs these checks, whatever it touches.
+  # A path filter here would let an out-of-scope PR (e.g. a Cursor-lane branch that wandered)
+  # merge green-by-absence with no checks having run at all.
   pull_request:
-    paths:
-      - 'docs/**'
-      - 'tools/**'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:

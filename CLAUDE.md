@@ -42,12 +42,22 @@ open it); hand it the Drive links.
   `BLOCKED_ON_CRITIQUE`: stage the work, journal a `critique_blocked` record, never false-green. Queue +
   record shapes: `docs/GROK.md` → "Review-gate availability".
 - Run `python3 tools/validate_journal.py --all` before landing (CI runs it too, `verify-docs`).
+- **Efficiency mode is the DEFAULT run shape:** Fable = bookends only (optional kickoff + mandatory end
+  gate); the execution session self-runs to its HANDOFF block and its critique dispositions stay
+  PROVISIONAL until the gate ratifies them. Shape, budget and the six re-entry triggers:
+  `docs/EFFICIENCY-MODE.md`; the one-paste activation, gate and dispatch prompts: `docs/RUN-TEMPLATE.md`.
+- **Cursor lane** — Cursor Ultra background agents are an approved second BUILDER pool, ACTIVATION
+  PENDING until a pilot PR clears the lane (open item 15): PRs only,
+  UNVERIFIED under Hard Rule 3, merged by a Claude gate after `verify-docs` CI + a Grok critique of the
+  diff; never a push to `main`, hard stops bind every lane. See `docs/CURSOR-LANE.md`.
 
 ## Landing rules
 - Land via the best available tier in `docs/LANDING-PROTOCOL.md` (Tier 1 native push from a session created WITH the repo attached · Tier 2 local-shell · Tier 3 one-click); say which tier you used.
 - Version-number bump ⇒ history rows in BOTH package files in the same patch (L-20260817-04),
   exactly one "(this document)" per file on the newest row, AFTER the em dash; bump the title
   headers too (a miss on 2026-08-17 cost a follow-up commit). Tag on version change.
+- Every landing overwrites `docs/LATEST-HANDOFF.md` with this run's HANDOFF block, in the same commit —
+  it is the gate's inbox; a stale file hands the gate the previous run's facts.
 - Journal rides every landing: append run-journal records in the SAME commit as the change.
   Never write outcome claims (green runs, Drive syncs) before the outcome is observed.
 - Weekly reset string is exactly `Sunday 9:00 PM America/New_York` at every site.

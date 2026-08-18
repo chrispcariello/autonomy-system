@@ -18,7 +18,7 @@ verbatim; do not improvise a softer version of them.
 
 ## Transport: how critiques actually run (v4.1.10+)
 
-- **Default — local Grok CLI, one-shot, on the Owner machine:** `grok -m grok-4.5 -p "<critique prompt>"` (Grok Build TUI, grok.com login, `C:\Users\chris\.grok\bin`). The orchestrating Claude session invokes it through the Owner-machine local shell bridge (same proven channel as Tier 2 landings). The prompt blocks below go in verbatim as the `-p` payload. Volume work may use `-m grok-4.6`; critique stays on grok-4.5.
+- **Default — local Grok CLI, one-shot, on the Owner machine:** `grok -m grok-4.5 -p "<critique prompt>"` (Grok Build TUI, grok.com login, `C:\Users\chris\.grok\bin`). The orchestrating Claude session of the run — the execution session in efficiency mode, or the Fable surface in system-surgery runs — invokes the CLI through the Owner-machine local shell bridge (same proven channel as Tier 2 landings). The prompt blocks below go in verbatim as the `-p` payload. Volume work may use `-m grok-4.6`; critique stays on grok-4.5.
 - **Fallback — browser grok.com**, only after a CLI call fails twice consecutively (non-zero exit, >120s timeout, or auth error); record the flip in the run journal.
 - Either transport: Grok output lands UNVERIFIED, no write authority, and passes a Claude gate. Inside the prompt, still prefer the public Drive links + short pasted excerpts over walls of text.
 

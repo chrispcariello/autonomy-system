@@ -52,6 +52,18 @@ CRITIQUE_REQUIRED_KEYS = (
     "retrieval_ref",
 )
 
+# Efficiency mode (v4.1.13) adds two record types with their own minimum shapes:
+# a Cursor-lane dispatch, and the Fable gate's ratification of an execution run.
+CURSOR_DISPATCH_REQUIRED_KEYS = ("ts", "type", "task", "branch_or_pr", "outcome")
+GATE_RATIFICATION_REQUIRED_KEYS = (
+    "ts",
+    "type",
+    "target",
+    "dispositions_reviewed",
+    "overturns",
+    "verdict",
+)
+
 REQUIRED_SECTIONS = ("## Critique policy", "## Credit-Aware Routing")
 
 FAIL = "FAIL"
@@ -95,6 +107,8 @@ def check_journal(path, report):
     lines = text.split("\n")
     seen_records = 0
     critiques = 0
+    dispatches = 0
+    ratifications = 0
     for number, raw in enumerate(lines, start=1):
         if not raw.strip():
             continue
@@ -108,7 +122,33 @@ def check_journal(path, report):
         if not isinstance(record, dict):
             report.add(FAIL, "journal-json", where, "line is valid JSON but not an object")
             continue
-        if record.get("type") != "grok_critique":
+        record_type = record.get("type")
+        if record_type == "cursor_dispatch":
+            dispatches += 1
+            missing = [k for k in CURSOR_DISPATCH_REQUIRED_KEYS if k not in record]
+            if missing:
+                report.add(
+                    FAIL,
+                    "cursor-dispatch-missing-keys",
+                    where,
+                    "cursor_dispatch record missing required key(s): %s — a Cursor PR with no "
+                    "complete Event Bus record has not entered the bus" % ", ".join(missing),
+                )
+            continue
+        if record_type == "gate_ratification":
+            ratifications += 1
+            missing = [k for k in GATE_RATIFICATION_REQUIRED_KEYS if k not in record]
+            if missing:
+                report.add(
+                    FAIL,
+                    "gate-ratification-missing-keys",
+                    where,
+                    "gate_ratification record missing required key(s): %s — without it an "
+                    "efficiency-mode run has no ratification artifact and cannot claim PASS/CLOSED"
+                    % ", ".join(missing),
+                )
+            continue
+        if record_type != "grok_critique":
             continue
         critiques += 1
         missing = [key for key in CRITIQUE_REQUIRED_KEYS if key not in record]
@@ -177,7 +217,8 @@ def check_journal(path, report):
         ADVISORY,
         "journal-summary",
         path,
-        "%d journal records parsed, %d grok_critique records checked" % (seen_records, critiques),
+        "%d journal records parsed, %d grok_critique / %d cursor_dispatch / %d gate_ratification "
+        "records checked" % (seen_records, critiques, dispatches, ratifications),
     )
 
 
@@ -396,6 +437,29 @@ def self_test():
             "missing key",
             {k: v for k, v in GOOD_CRITIQUE.items() if k != "retrieval_ref"},
             ["critique-missing-keys"],
+        ),
+        (
+            "cursor_dispatch without branch_or_pr or outcome",
+            {
+                "ts": "2026-08-18T23:00:00Z",
+                "type": "cursor_dispatch",
+                "status": "UNVERIFIED",
+                "task": "generate a LATEST-HANDOFF history index page",
+                "retrieval_ref": "LM-RET-EXAMPLE-0000",
+            },
+            ["cursor-dispatch-missing-keys"],
+        ),
+        (
+            "gate_ratification without overturns or verdict",
+            {
+                "ts": "2026-08-18T23:05:00Z",
+                "type": "gate_ratification",
+                "status": "VERIFIED",
+                "target": "v4.1.x execution run",
+                "dispositions_reviewed": 8,
+                "retrieval_ref": "LM-RET-EXAMPLE-0000",
+            },
+            ["gate-ratification-missing-keys"],
         ),
     ]
     passed = 0
