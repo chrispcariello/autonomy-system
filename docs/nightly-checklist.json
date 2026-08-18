@@ -1,0 +1,71 @@
+{
+  "version": "v4.1.11",
+  "schedule_utc": "30 1 * * *",
+  "schedule_note": "01:30 UTC daily = 9:30 PM EDT; becomes 8:30 PM ET in EST months unless the Owner adjusts it",
+  "max_minutes": 20,
+  "scope": "docs only",
+  "doc": "docs/NIGHTLY-HYGIENE.md",
+  "steps": [
+    {
+      "id": "a",
+      "title": "CREDIT-CHECK via browser if reachable; post the note as UNVERIFIED",
+      "required": true,
+      "on_fail": "record UNKNOWN with the reason (browser unreachable / page unreadable), never invent a number, continue"
+    },
+    {
+      "id": "b",
+      "title": "Retrieve all of docs/lessons/lessons.jsonl plus the run-journal tail; record retrieval_ref",
+      "required": true,
+      "on_fail": "record the read failure and the missing retrieval_ref as a self-test failure, continue"
+    },
+    {
+      "id": "c",
+      "title": "Run specguard on docs/SYSTEM-CURRENT.md and docs/SYSTEM-SPEC-CURRENT.md; record counts and the delta vs last night",
+      "required": true,
+      "on_fail": "record the error or the new FAILs verbatim; do not edit rules to silence the linter; continue"
+    },
+    {
+      "id": "d",
+      "title": "Refresh PATCH-NOTES open items so every item carries an owner and an exit criterion; add missing ones",
+      "required": true,
+      "on_fail": "record which items could not be completed and why; never close an item without evidence; continue"
+    },
+    {
+      "id": "e",
+      "title": "One surplus cleanup only (delete-me moves, obviously dead drafts); no aggressive deletion",
+      "required": false,
+      "on_fail": "record 'no safe cleanup found' or the failure; continue"
+    },
+    {
+      "id": "f",
+      "title": "Append the nightly journal record to docs/run-journals/run-journal.jsonl",
+      "required": true,
+      "on_fail": "report the record inline in the run report so nothing is lost, and flag the append failure"
+    },
+    {
+      "id": "g",
+      "title": "Commit and push docs via the best available tier in docs/LANDING-PROTOCOL.md, then Actions to the Drive mirror",
+      "required": true,
+      "on_fail": "stage the work and report BLOCKED with the reason and the tiers attempted; never claim a push or a Drive sync that was not observed"
+    }
+  ],
+  "credit_rule": "If Claude credits are CLAUDE_CRITICAL, skip Grok on the nightly unless specguard fails; then run one focused Grok Heavy pass. Frequency cut only, never depth.",
+  "hard_stops": [
+    "no money movement",
+    "no ledger, inventory, or order writes",
+    "no third-party contact",
+    "no credentials, tokens, or secrets in repo, Drive, chat, or logs",
+    "no live system writes outside docs",
+    "no architecture changes and no new dependencies",
+    "no activation of deferred layers (Grok Bot layer, Event Bus collapse rule)",
+    "anything irreversible escalates to the Owner"
+  ],
+  "failure_behavior": "any step may fail; record it and continue to the journal record and the report; never silent-skip and never report green on unobserved work",
+  "journal_record_type": "nightly_hygiene",
+  "scope_rule": "routine-only: appends + one reversible cleanup; never edits package-file bodies or system rules; significant findings deferred to attended runs",
+  "expected_unattended_outcomes": {
+    "a": "UNKNOWN (honest)",
+    "g": "BLOCKED (honest) if no landing tier; Tier 2 possible when Owner desktop online"
+  },
+  "grok_on_new_failure": "one local Grok CLI call per docs/GROK.md transport when Owner desktop online; browser fallback"
+}

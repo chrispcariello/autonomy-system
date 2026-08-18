@@ -1,4 +1,4 @@
-# SYSTEM v4.1.10 — PACKAGE FOR CLAUDE
+# SYSTEM v4.1.11 — PACKAGE FOR CLAUDE
 
 Source of truth for the Autonomous Multi-Agent System.
 
@@ -177,6 +177,37 @@ Before any multi-step autonomous run: (1) browser-check Claude weekly Fable/Opus
 No silent mid-call API for exact Claude or Grok %. Browser read is the method. If the UI is blocked or changed, record UNKNOWN (mode: UNKNOWN) and conserve.
 
 
+## Critique policy (quality-preserving efficiency)
+
+**Non-negotiable quality rule:** "Efficiency may reduce the FREQUENCY of expensive steps, never the DEPTH required for significant work."
+
+### Routine vs significant
+- **Routine** — low-risk work that triggers none of the significant conditions: typo and formatting fixes, single-file non-rule edits, journal appends, restatements of existing rules.
+- **Significant** — any change to system rules; any change to routing; any change to safety rules or hard stops; any multi-file package change; anything an Owner order names significant. The Hard Rule 7 significance test still applies in full. When unsure → significant.
+
+### Critique ladder
+- **Routine → 1 focused Grok Heavy pass.**
+- **Significant → 3-pass Grok Heavy ladder, in this order:**
+  1. **Pass 1 — Defects:** defects, contradictions, missing evidence.
+  2. **Pass 2 — False-green:** false-green risks, process holes, "looks done but isn't".
+  3. **Pass 3 — Final adversarial:** what makes this unsafe, incomplete, or drifted from Owner vision.
+
+### Handling findings
+- Claude must APPLY or explicitly REJECT every major Grok finding, each with a one-line reason recorded in the run journal.
+- An "LGTM" or an empty critique is a **FAIL** for significant work: re-scope and re-ask, never proceed on it.
+- Grok output stays UNVERIFIED until a Claude gate verifies it. Grok has no write path.
+- Credit exception (frequency only, never depth): under CLAUDE_CRITICAL, ROUTINE critiques may be deferred or batched, and the nightly hygiene run may skip Grok unless specguard fails. Significant work NEVER lands without the full 3-pass ladder, in any credit mode — if the ladder cannot run, the work stages and waits.
+
+- **Major finding** = any bullet naming a rule contradiction, a safety/hard-stop weakening, or a false-green path. Style and wording notes are minor and may be batched.
+- Ladder passes must be non-overlapping: a pass that substantially repeats a prior pass is re-asked once with narrowed scope before it counts.
+- The definition of "significant" may only be narrowed by an explicit Owner order recorded in PATCH-NOTES — never by session judgment under time or credit pressure.
+- Pre-land critique of a significant patch reviews pasted excerpts + diff hunks (the mirror still shows the previous version); post-land, the public Drive links are the artifact. Both modes are valid; say which was used.
+- Nightly hygiene is routine by construction (appends + one reversible cleanup). If a nightly run would touch the SYSTEM-CURRENT or SYSTEM-SPEC-CURRENT body or any system rule, it STOPS and defers to an attended run — nightly never lands significant changes.
+
+Copy-ready prompt blocks and the required Grok output shape: `docs/GROK.md`.
+
+---
+
 ## Claude model split (Owner rule)
 
 - **Claude Fable 5 Max / Ultracode** — highest-level orchestration only (decompose, route, verify, final quality gate, Meta-Improvement process critique).
@@ -203,4 +234,5 @@ Grok Bot Layer (Phase 1) — specified, deferred, not cancelled. Phase 2.
 - **v4.1.7** — ADDED: Durable storage rule (AUTONOMY-SYSTEM shared durable home; product-local staging is temporary; runs incomplete until artifacts promoted; superseded files to delete-me/)
 - **v4.1.8** — ADDED: Shared visibility + version control (private GitHub repo autonomy-system is canonical; Drive AUTONOMY-SYSTEM folder is the shared mirror; commit + tag on version change; Drive mirror updated via Actions or explicit sync; Summary Reports carry commit SHA + Drive link; never commit secrets)
 - **v4.1.9** — ADDED (SPEC-side): SYSTEM-SPEC-CURRENT.md now carries the Credit-Aware Routing body (CREDIT-CHECK note, Claude/Grok threshold modes and Recommendation enum, Grok Build delegation strategies, standing order, weekly reset) mirrored from this package; this document's Credit-Aware Routing section is unchanged. Hygiene only, no substantive rule changes
-- **v4.1.10** — (this document) CHANGED: the Grok Heavy critique path now defaults to the local one-shot Grok CLI on the Owner machine (`grok -m grok-4.5 -p "<critique prompt>"`, Grok Build TUI 1.0.3, grok.com login, verified 2026-08-18); volume work may use `-m grok-4.6`; browser grok.com demoted to FALLBACK. Grok output still lands UNVERIFIED with no write authority; Hard Rules unchanged
+- **v4.1.10** — CHANGED: the Grok Heavy critique path now defaults to the local one-shot Grok CLI on the Owner machine (`grok -m grok-4.5 -p "<critique prompt>"`, Grok Build TUI 1.0.3, grok.com login, verified 2026-08-18); volume work may use `-m grok-4.6`; browser grok.com demoted to FALLBACK. Grok output still lands UNVERIFIED with no write authority; Hard Rules unchanged
+- **v4.1.11** — (this document) ADDED: Critique policy (routine = 1 focused Grok Heavy pass; significant = 3-pass ladder defects/false-green/final-adversarial; major-finding definition; apply-or-reject with journaled one-line reasons; LGTM/empty = FAIL; pass non-overlap; significant-definition narrowing only by Owner order; pre-land/post-land artifact modes; nightly is routine-only and never lands significant changes) + interconnect/hygiene doc set (GROK.md, HANDOFF-FORMAT.md, OWNER-QUICK-REFERENCE.md, INTERCONNECT.md, NIGHTLY-HYGIENE.md + nightly-checklist.json, CLAUDE.md update). Version renumbered from a v4.1.10 collision with the Grok-CLI-bridge patch that landed first the same morning; reconciled, no rules lost
