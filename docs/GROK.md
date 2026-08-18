@@ -80,6 +80,30 @@ run the ladder, the significant change waits; it does not land on one thin pass.
 - Grok findings enter as UNVERIFIED; the Claude gate is what makes any of them real.
 - Record the pass count actually run (1 or 3) in the HANDOFF block — see `docs/HANDOFF-FORMAT.md`.
 
+## Critique journal contract
+
+Every Grok critique call — CLI or browser, routine or ladder — appends exactly ONE record to
+`docs/run-journals/run-journal.jsonl`, IN THE SAME COMMIT as any fixes it produced. One call = one
+record: this is the capture/ingest contract for critique output into the Event Bus. A critique whose
+fixes land without its record is an incomplete landing, not a saved step.
+
+Schema, one JSON line, alongside the journal's standard `status` field: `ts` (UTC ISO) · `type`
+`"grok_critique"` · `target` (file/section critiqued) · `pass` (`0` routine, `1` defects, `2`
+false-green, `3` adversarial) · `model` (`"grok-4.5"`) · `transport` (`"cli"` | `"browser"`) ·
+`exit_code` (int) · `duration_s` (int) · `bullets_count` (int) · `applied`
+(`[{"b": <bullet #>, "reason": "one line"}]`) · `rejected` (same shape) · `retrieval_ref`.
+
+```json
+{"ts":"2026-08-18T11:52:00Z","type":"grok_critique","status":"VERIFIED","target":"docs/PATCH-NOTES-CURRENT.md REMAINING OPEN ITEMS 2/5/6","pass":1,"model":"grok-4.5","transport":"cli","exit_code":0,"duration_s":78,"bullets_count":6,"applied":[{"b":2,"reason":"exit criterion was unobservable - rewritten as a pass/fail fixture"}],"rejected":[{"b":5,"reason":"asks for tooling - docs-only cycle, folded into open item 2"}],"retrieval_ref":"LM-RET-2026-08-18T11:38Z-E"}
+```
+
+- **Silence on a major bullet is not a decision.** Every major bullet lands in `applied` or `rejected`
+  with its one-line reason; minor style bullets may be batched or omitted.
+- **An empty or "LGTM" critique on significant work is recorded, not swallowed:** `bullets_count` 0 and
+  `status` `"FAIL"`. It does not count as a pass — re-scope, re-ask, and write a second record.
+- **A browser-fallback flip sets `transport` `"browser"`** in that record, so the flip is visible where
+  the critique is, not only in prose.
+
 ## Required Grok output shape
 
 Every critique must come back as:
