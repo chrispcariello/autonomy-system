@@ -12,8 +12,8 @@
 > spot-check the hashes yourself. Read the canonical documents in full on ANY conflict, gap or
 > staleness — and read the gate and authority documents directly, always, on surgery-class runs.
 
-SELF-DIGEST: f45ded30c1d7233d6cf6004533f6dcfe8077228caace9ee7c8d81ed2cecfdefe
-MANIFEST-DIGEST: 9a2131b73da4bfedbff9e194ffb97845824455185d793ddc4a1428e46b4bc78b
+SELF-DIGEST: 7775c85c636f0a0b59f5f3ad821e8abc08871eea3e66562befefc98e24bcd808
+MANIFEST-DIGEST: 48eee2d412ae168bb012c156ebd19098e17e0751d5c97598b5c91fb50bc38b3b
 
 ## Current state at a glance
 
@@ -420,29 +420,34 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 
 ---
 
-**GATE STATUS: PENDING — awaiting the Fable end gate.** This is the CREW's baton for the CURSOR HARVEST
-PROCEDURE run, written before ratification. Nothing below is PASS or CLOSED: the crew's critique
-dispositions (journal records **80, 81, 82**) are PROVISIONAL until a `gate_ratification` record exists,
-and PATCH-NOTES item **19** was deliberately ADDED OPEN rather than self-closed — its exit requires a
-real harvested PR that this run did not perform. The run classified itself **SIGNIFICANT, non-surgery**
-and is **batch-INELIGIBLE** on both tests (`Significant: yes`, and it edited three files on the
-eligibility floor list), so it is gated individually.
+**GATE STATUS: RATIFIED — `gate_ratification` record 84, verdict PASS, 0 overturns, `fable_phases` 2 so
+zero fix loops.** This is the CREW's baton for the CURSOR HARVEST PROCEDURE run, now gated. The crew's
+critique dispositions (journal records **80, 81, 82**) are no longer PROVISIONAL: all 24 bullets were
+read in full by the gate and every disposition stands as the crew wrote it, including the single
+rejection (record 82, bullet b1), which is UPHELD. PATCH-NOTES item **19** was deliberately ADDED OPEN
+rather than self-closed and **STAYS OPEN** — its exit requires a real harvested PR that this run did not
+perform, and ratification cannot supply it. The run classified itself **SIGNIFICANT, non-surgery** and is
+**batch-INELIGIBLE** on both tests (`Significant: yes`, and it edited three files on the eligibility
+floor list), so it was gated individually.
 
 ```
 HANDOFF
-SHA: STAGED (unpushed) at write time — a file cannot contain its own landing SHA. Landing via Tier 2
-  (local-shell land.ps1 into the standing clone C:\Users\chris\autonomy-system-live), base/parent
-  78f5e253ead6b3898da0757edfd2e14ddc128ea1 (the ratified record-79 gate commit), fast-forward only.
-  No tag: this run carries no version bump. GATE: fill in the landed SHA here from git log -1 in the
-  clone rather than from the crew's report.
-Drive: NOT VERIFIED THIS RUN for this run's own landing — deferred under LEAN SCRIBE, which is the
-  standing law now that the v4.1.16 run that wrote it is ratified (record 79). The scribe verifies its
-  own LANDED line and the validator exit only.
-  DEFERRED TO THE NEXT RUN, named separately so one read cannot silently discharge three: (a) the exact
-  string "Harvest procedure (pipelined lane)" in the mirrored docs/CURSOR-LANE.md — the word
-  "pipelined" is the one-word check; (b) the exact string "NAMING IS NOT HARVESTING" in the mirrored
-  docs/RUN-TEMPLATE.md; (c) the exact string "19 listed, 13 open" in the mirrored
-  docs/PATCH-NOTES-CURRENT.md. Three strings, three files, one next run.
+SHA: 2ec65341095b79f505e825991cd595edd9f2e466 — FILLED BY THE GATE from the standing clone
+  C:\Users\chris\autonomy-system-live (git rev-parse HEAD == origin/main == this SHA, branch main,
+  working tree clean), not from the crew's report. The crew correctly left this STAGED (unpushed),
+  because a file cannot contain its own landing SHA. Landed via Tier 2 (local-shell land.ps1),
+  base/parent 78f5e253ead6b3898da0757edfd2e14ddc128ea1 (the ratified record-79 gate commit),
+  fast-forward only. No tag: this run carries no version bump.
+Drive: NOT VERIFIED for this run's landing NOR for the gate landing that ratified it — deferred under
+  LEAN SCRIBE, which is the standing law now that the v4.1.16 run that wrote it is ratified (record 79).
+  The scribe verifies its own LANDED line and the validator exit only.
+  DEFERRED TO THE NEXT RUN, CARRIED FORWARD BY THE GATE AND NOW FOUR, named separately so one read
+  cannot silently discharge four: (a) the exact string "Harvest procedure (pipelined lane)" in the
+  mirrored docs/CURSOR-LANE.md — the word "pipelined" is the one-word check; (b) the exact string
+  "NAMING IS NOT HARVESTING" in the mirrored docs/RUN-TEMPLATE.md; (c) the exact string
+  "19 listed, 13 open" in the mirrored docs/PATCH-NOTES-CURRENT.md; (d) ADDED BY THE GATE for its own
+  ratification landing, the exact string "record 84" in the mirrored docs/LATEST-HANDOFF.md. Four
+  strings, four files, one next run — and one read of one file discharges exactly one of them.
   DISCHARGED BY THIS RUN, the compensating control for f13b1e5, all three strings read by CONTENT and
   not by modifiedTime (journal record 83): the mirrored docs/EFFICIENCY-MODE.md (Drive id
   1s42VvKYAqgrMJgw05htM38DkdJVi5V6y, text/markdown, 41349 bytes) CONTAINS "docs/SYSTEM-MAP.html" inside
@@ -533,9 +538,9 @@ Generation FAILS when it is not — the one cross-file consistency check that ex
 | `docs/CURSOR-LANE.md` | `241f44fa35de93e35d6dd9e43e64190c1d778ddfd8da7929bbe7238f4762e70e` |
 | `docs/OWNER-FLOW.md` | `1caa25201c04a47c46c23d14421c9218101c107e06e9cf76f7e74ffd1cd2fcb0` |
 | `docs/NIGHTLY-HYGIENE.md` | `464ee705a33a71c764b102798bd6fa93fd0b9c9cdf90d4345509599288eed3d6` |
-| `docs/lessons/lessons.jsonl` | `99c3a9df776fbda5159ae5211daede50f9069e62601b5db2ab0434e1649f1aae` |
-| `docs/PATCH-NOTES-CURRENT.md` | `929277ada1dca466ffa55d6b8ca4b27898f9acfb2761953dc1c45b3384048978` |
-| `docs/LATEST-HANDOFF.md` | `4fc1489d8e61d651307c511a1d3e715afa4a688557c4e55ada31e8423a36fe90` |
+| `docs/lessons/lessons.jsonl` | `3f2118d032c17d6cef34b90b2f42f81cb442f97f210cc794104c3424e8d797e7` |
+| `docs/PATCH-NOTES-CURRENT.md` | `1f0ac1f2b7965283fb44efb8639c406a3e0d01a74af5085d98ba370589469669` |
+| `docs/LATEST-HANDOFF.md` | `536be960d291468bed4927121a844592316f4fccc015eb3f6cd1e36906880980` |
 | `tools/validate_journal.py` | `816ea1c1f33f29c5d91950bc540bf6f5d802b27458276f633e082bae918f7ded` |
 
 Generated outputs, hashed so a hand-edit of them is detectable too:
@@ -543,7 +548,7 @@ Generated outputs, hashed so a hand-edit of them is detectable too:
 | generated file | sha256 |
 | :-- | :-- |
 | `docs/GROK-CONTEXT.txt` | `ca83d9b1b8739004a9c6dbaaa1a6c597cb613c55131c208a089ccadd7fc87e1d` |
-| `AGENTS.md` | `1c66558f69a4e405ad72885b682216b962949f78c9ca480420ec1b5a791fa8d9` |
+| `AGENTS.md` | `05ddafb9e23d12702af382d43a36b94391c19a7cdd72233bcce305a83dbb0892` |
 
 **What the MANIFEST deliberately does NOT cover, so nobody reads more into it:**
 (1) `docs/run-journals/**` — append-only evidence, not a rule source; including it would
