@@ -92,21 +92,69 @@ Do not autopilot a rule change. That exemption is written into the rules
 
 ## Who bills what
 
-- **Opus (the crew)** — the same Claude subscription as Fable, on a much cheaper meter. This is where
-  almost all the work should happen.
-- **Cursor background agents** — free while your SuperGrok Heavy stays active. They never push
-  anything straight in: their work arrives as a pull request and gets the CI checks, a Grok critique,
-  and a Claude gate before it merges. `docs/CURSOR-LANE.md`.
-- **Grok** — bills your Grok subscription, not Claude. Critique costs you zero Claude usage, which is
-  exactly why critique depth is never the thing being economised.
+Your standing order, in one line: **Claude is the meter to conserve.** Everything below is arranged
+around that. The full wording lives in the rulebook (`docs/SYSTEM-CURRENT.md` → Credit-Aware Routing →
+Owner routing directive).
+
+- **Opus (the crew)** — the same Claude subscription as Fable, on a much cheaper meter. Still Claude
+  usage, though, so it is not free: it gets the trivial edits, the writing that has to be canonical,
+  the merges, the things that need your machine's hands, and anything Cursor cannot reach.
+- **Cursor background agents** — free while your SuperGrok Heavy stays active, and therefore the
+  **default for coding work of any real size**: if the job is repo code above trivial size and it fits
+  the pull-request shape, it goes to Cursor unless there is a stated reason not to, and that reason
+  gets written down. They never push anything straight in: their work arrives as a pull request and
+  gets the CI checks, a Grok critique, and a Claude gate before it merges. `docs/CURSOR-LANE.md`. The
+  trade you are making is time, not money — the review lane is slower than an Opus edit, which is why
+  genuinely trivial changes still stay with Opus, and so do emergency repairs: if something is broken
+  and the queue would keep it broken for hours, the fix goes the fast way and the reason gets written
+  down. The rulebook changes themselves never go to Cursor either; those are lane 4 by definition.
+- **Grok** — bills your Grok subscription, not Claude, and you have plenty of it, so it is used
+  **liberally**: critique on everything, plus drafting, research and chewing through long text. Two
+  fixed limits that this does not change — everything Grok returns is UNVERIFIED until a Claude gate
+  checks it, and Grok never writes to the repo. It hands over words; a Claude unit decides what lands.
 - **Fable (the inspector)** — bills only at the moments it actually speaks: the plan, the gate, and one
   more moment per fix loop. Every time it re-enters a chat it re-reads that chat, and re-reading is
   charged at a cached discount rather than full price — which is why one long-running chat with a few
   Fable moments beats a new Fable chat each time.
 
-The honest caveat: nothing in this system meters per-model spend. The number actually tracked is how
-many times Fable spoke — `fable_phases` in the gate's record. Treat the cost picture above as the
-shape, not as a measured bill.
+The honest caveat: nothing in this system meters per-model spend. The numbers actually tracked are how
+many times Fable spoke — `fable_phases` in the gate's record — and the per-agent token counts in the
+receipt below. Treat the cost picture above as the shape, not as a measured bill.
+
+## Receipts — what you get after every run
+
+You asked for proof that the expensive credits are not being wasted. That proof is the **usage
+receipt**, and from v4.1.15 every run ends with one. It is the last thing in the message the inspector
+sends you, and it says four things:
+
+- **What each crew cost, in tokens.** One line per agent that was spawned for the job.
+- **How many Fable moments were spent** — the inspector's own appearances, the expensive ones.
+- **How many Grok passes ran, and how long each took.** These cost you no Claude usage at all.
+- **How many Cursor dispatches went out.** Also no Claude usage.
+- **Where the work was sent** — what went to Cursor, what to Opus, what to Grok, and if a real coding
+  job stayed with Opus instead of going to Cursor, the one-line reason why.
+
+The inspector writes the receipt, not the crew, for a plain reason: it is the only one who can see the
+crews' totals. A crew cannot read its own bill, so a crew-written receipt would be a guess.
+
+It tells you what was *spent*, not what was *saved*. There is no way to know what a job would have cost
+had it gone the other way, so you will never see a "saved you X" number — that would be a made-up
+figure dressed as a measurement.
+
+**Two things the receipt is not.** It is not a bill from Anthropic — there is no machine-readable meter
+for your plan, so these are *token counts*, a stand-in for spend rather than spend itself. And the
+numbers come from the same system that writes them down, so it is honest bookkeeping, not an audit. If
+a number cannot be measured it is written **UNKNOWN** with the reason, never guessed.
+
+**What it misses.** It only sees runs. Your own chats with Fable outside a run, the re-reading that
+happens every time a chat is resumed, and the fact that Fable and Opus share one plan figure rather
+than two — none of that shows up. So a run can produce a clean receipt in a week where the meter still
+moved a lot. Three of the four lines can at least be checked against the run's own records — the Grok
+passes, the Cursor dispatches, and the Fable moments. The token line is the one nothing can check, and
+it is the one to read with the most salt.
+
+**The real meter is in the Claude app**, under usage settings. That is the number that decides whether
+you are near a limit. The receipts are the per-run picture of where it went; the app is the total.
 
 ## What has to be true before you paste
 

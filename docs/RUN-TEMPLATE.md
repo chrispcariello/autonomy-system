@@ -43,6 +43,21 @@ Gate the latest run: read docs/LATEST-HANDOFF.md + the run-journal tail, ratify 
 execution unit's dispositions, verify the Drive content strings, and return a verdict plus one
 surplus note. Append a gate_ratification record (ts, type, target, dispositions_reviewed, overturns,
 verdict, fable_phases, retrieval_ref) — no PASS or CLOSED claim without it.
+
+END your message to me with the USAGE RECEIPT, and compose it yourself — only the gating surface sees
+the spawn results: tokens per spawned agent as reported by those results, your own fable_phases, Grok
+passes with durations, and Cursor dispatches. RECONCILE the last three against records rather than
+memory — Grok passes and durations from this run's grok_critique records, Cursor dispatches from its
+cursor_dispatch records, fable_phases from the gate_ratification record you are writing — and say so.
+Add the ROUTING LINE: what went to Cursor / Opus / Grok, plus the non-dispatch reason if above-trivial
+coding stayed with Opus. The token line has no counter-record, so mark it as self-reported, and write
+no "credit saved" figure — the counterfactual is unmeasurable, so this records activity, not savings.
+In this manual lane nobody spawned
+an agent, so write "n/a — no agents spawned; execution ran as a session paste" on that line rather
+than a guess; anything else you cannot measure is UNKNOWN with the reason. The Anthropic plan meter is
+not machine-readable — this receipt is the proxy, and the true meter is the Claude app's usage
+settings. The receipt never stalls the verdict: it rides this same turn, it is not a fourth verdict,
+and a figure the platform does not emit is written UNKNOWN rather than chased.
 ```
 
 ## 3 — CURSOR DISPATCH (paste into a Cursor background agent; see docs/CURSOR-LANE.md)
@@ -103,6 +118,20 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    write ONE complete standalone work order carrying an explicit SCOPE and explicit STOP CONDITIONS —
    an order with neither is an order a crew can run forever, and there is no live supervisor. It must
    stand on its own: the crew sees the order and the repo, never this chat.
+   STATE THE ROUTING SPLIT in the plan — which parts go to Cursor, which to Opus, which to Grok — per
+   the Owner routing directive in docs/SYSTEM-CURRENT.md → Credit-Aware Routing. Above-trivial
+   repo-based coding routes to the Cursor lane BY DEFAULT because it draws zero Claude credit; whenever
+   it does NOT, give the one-line reason in the plan and have it journaled on the run record, so a
+   non-dispatch is a recorded decision rather than an omission — and expect a later gate to REJECT a
+   reason that is boilerplate. The default covers only what fits the PR lane (docs/** and tools/**,
+   branch to PR to CI to Grok diff critique to gate merge); it never covers system surgery, package
+   files, Hard Rules or canonical merges, which are exactly the work you refused to spawn in step 0,
+   and it never covers a hot-path repair — main red, CI failing, or the broken thing being the lane's
+   own validators, workflows or landing script. Grok is used liberally for drafting, research and
+   large-text summarization as UNVERIFIED input to a Claude gate — never as an author; governance text
+   (package files, CLAUDE.md, Hard Rules, PATCH-NOTES, the journal) is Claude-authored end to end and
+   Grok's role there is critique only. This directive changes routing preference and nothing else: no
+   Hard Rule, no model split, no write authority moves, and no credit state ever buys a thinner gate.
 2. SPAWN the crew — one or more Opus execution agents carrying that order. Each agent must:
    self-brief from the repo and record its retrieval_ref; build the smallest coherent diff; take
    critique per docs/GROK.md (routine 1 pass, significant the 3-pass ladder) BEFORE landing, applying
@@ -147,7 +176,18 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    counts this run honestly: 2 for plan+gate, plus 1 for each fix loop actually run (so the loop count
    is always fable_phases minus 2).
 7. KEEP LIVE FABLE PHASES to plan + gate, plus one per fix loop. Everything else is crew work.
-8. END by reporting the verdict to the Owner in one short message.
+8. END by reporting the verdict to the Owner in one short message, and END THAT MESSAGE WITH THE
+   USAGE RECEIPT. You compose it because only the gating surface sees the spawn results: tokens per
+   spawned agent as reported by those results, your own fable_phases, Grok passes with durations, and
+   Cursor dispatches, and the ROUTING LINE (what went to Cursor / Opus / Grok, plus the non-dispatch
+   reason if above-trivial coding stayed with Opus). Reconcile the middle three against this run's
+   grok_critique, cursor_dispatch and gate_ratification records; the token line is self-reported and
+   has no counter-record, so say that. Anything you cannot measure is written UNKNOWN with the reason,
+   never estimated, and a run that spawned nobody writes "n/a — no agents spawned" rather than a column
+   of zeros. Write no "credit saved" figure: the counterfactual is unmeasurable, so this receipt
+   records activity, not savings. Say plainly that the Anthropic plan meter is not machine-readable and
+   this receipt is the proxy — the true meter is in the Claude app's usage settings. The receipt rides
+   this gate turn: it is not a fourth verdict, costs no extra fable_phase, and never delays a RATIFY.
 
 THE TASK: <one paste>
 ```
