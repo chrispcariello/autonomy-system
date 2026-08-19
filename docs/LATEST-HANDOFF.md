@@ -11,6 +11,19 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 
 ---
 
+**GATE STATUS: RATIFIED — 2026-08-19.** The Fable gate has ruled on v4.1.16: verdict **PASS**, **0
+overturns**, and **BOTH commits ratified** — `a1097a8a0063c66d5495b6be5cb1c69e438abc4a` (tag
+v4.1.16) and the correction `f17aa1a57c2ae5b32ee730b7441fa98db290e640`. The ratification artifact is
+`gate_ratification` **record 74** in `docs/run-journals/run-journal.jsonl`, which carries the
+dispositions reviewed, the gate rulings, the evidence read and the exceptions. The crew's in-run
+critique dispositions are therefore no longer PROVISIONAL. The eight-field HANDOFF block below is the
+run baton exactly as the crew wrote it and is PRESERVED VERBATIM — including the Ask Grok question;
+ratification records a verdict on it, it does not rewrite it. One field reference to read with its
+write-time in mind: the SHA field's "correction commit … which is the commit carrying this file"
+described f17aa1a at the moment that block was written; this ratification commit is the one carrying
+the file now. Item 18 stays OPEN — its exit needs the NEXT run's self-brief and the lean-scribe
+compensating control.
+
 ```
 HANDOFF
 SHA: a1097a8a0063c66d5495b6be5cb1c69e438abc4a — LANDED on main, Tier 2 (local-shell land.ps1 into the

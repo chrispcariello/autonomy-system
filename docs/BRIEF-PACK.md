@@ -12,8 +12,8 @@
 > spot-check the hashes yourself. Read the canonical documents in full on ANY conflict, gap or
 > staleness — and read the gate and authority documents directly, always, on surgery-class runs.
 
-SELF-DIGEST: bc2be32e877c076b51bcd59e93d60828bd1e4b32e61cd5d04ffaae51394475f9
-MANIFEST-DIGEST: e405e08feca76293a8d205095d68d9c8a7d81fff40e8a5fef78dc1421a2cc643
+SELF-DIGEST: abf399c2a7200bac6523099df5c081ae4ce95c9b507f2e1ab10d63004aed0721
+MANIFEST-DIGEST: 9f12ae4abcbc856d496f00af766339eddb3fb56f4dc85c023cef808658f5a5bd
 
 ## Current state at a glance
 
@@ -400,6 +400,19 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 
 ---
 
+**GATE STATUS: RATIFIED — 2026-08-19.** The Fable gate has ruled on v4.1.16: verdict **PASS**, **0
+overturns**, and **BOTH commits ratified** — `a1097a8a0063c66d5495b6be5cb1c69e438abc4a` (tag
+v4.1.16) and the correction `f17aa1a57c2ae5b32ee730b7441fa98db290e640`. The ratification artifact is
+`gate_ratification` **record 74** in `docs/run-journals/run-journal.jsonl`, which carries the
+dispositions reviewed, the gate rulings, the evidence read and the exceptions. The crew's in-run
+critique dispositions are therefore no longer PROVISIONAL. The eight-field HANDOFF block below is the
+run baton exactly as the crew wrote it and is PRESERVED VERBATIM — including the Ask Grok question;
+ratification records a verdict on it, it does not rewrite it. One field reference to read with its
+write-time in mind: the SHA field's "correction commit … which is the commit carrying this file"
+described f17aa1a at the moment that block was written; this ratification commit is the one carrying
+the file now. Item 18 stays OPEN — its exit needs the NEXT run's self-brief and the lean-scribe
+compensating control.
+
 ```
 HANDOFF
 SHA: a1097a8a0063c66d5495b6be5cb1c69e438abc4a — LANDED on main, Tier 2 (local-shell land.ps1 into the
@@ -519,8 +532,8 @@ Generation FAILS when it is not — the one cross-file consistency check that ex
 | `docs/OWNER-FLOW.md` | `1caa25201c04a47c46c23d14421c9218101c107e06e9cf76f7e74ffd1cd2fcb0` |
 | `docs/NIGHTLY-HYGIENE.md` | `464ee705a33a71c764b102798bd6fa93fd0b9c9cdf90d4345509599288eed3d6` |
 | `docs/lessons/lessons.jsonl` | `99c3a9df776fbda5159ae5211daede50f9069e62601b5db2ab0434e1649f1aae` |
-| `docs/PATCH-NOTES-CURRENT.md` | `850c0452f94274e2f70a374d85d9e4789a51b5784760d757a8c300b884b5cf5c` |
-| `docs/LATEST-HANDOFF.md` | `ce7ca45a8c2faf44b3068da3919ebb9cfb5819db2b0adbc2bbdbffe114834b29` |
+| `docs/PATCH-NOTES-CURRENT.md` | `2001889ffc8af1edf9664c21cace6ca347678699d5bdad934b5463f15d1df266` |
+| `docs/LATEST-HANDOFF.md` | `6fdbbe804b25498efe8a4b2df66333b06f1c2cf2fec63595bfbdd9b0b85717e0` |
 | `tools/validate_journal.py` | `846fbb6bfcd52bead243e4f8dc8b7d5669451d059b456dfe4b9c54ca6e41eee5` |
 
 Generated outputs, hashed so a hand-edit of them is detectable too:
@@ -528,7 +541,7 @@ Generated outputs, hashed so a hand-edit of them is detectable too:
 | generated file | sha256 |
 | :-- | :-- |
 | `docs/GROK-CONTEXT.txt` | `ee04acb2fa6bb866455e46b48c3a5b9206e8fa53437aeb0a711bd64b3b1bec82` |
-| `AGENTS.md` | `be5346a51be8c6b06dddf4b1e2fb180bb515be68fe6b06afca6c9be1a0b24129` |
+| `AGENTS.md` | `74cfd965dd3b99b4a507b35870a847eb51e98613b0578584da49b37d7adc32b3` |
 
 **What the MANIFEST deliberately does NOT cover, so nobody reads more into it:**
 (1) `docs/run-journals/**` — append-only evidence, not a rule source; including it would
