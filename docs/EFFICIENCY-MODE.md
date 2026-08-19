@@ -246,6 +246,20 @@ that skips the lane for speed says SPEED as its reason, so the gate reads it as 
 is; laundering deadline pressure through the capability clause is precisely how a default dies the
 first time it costs something, and a reason of that shape is the one a gate should reject.
 
+**The lane's LATENCY is answered by the HARVEST PROCEDURE, and that procedure is owned elsewhere.**
+The reason a zero-credit lane still gets skipped for speed is wall-clock, and the fix is pipelining,
+not a thinner review: waves carrying Cursor work DISPATCH CURSOR FIRST and HARVEST LAST, a green PR
+is POUNCED on rather than remembered, and several ready PRs may be BATCH-HARVESTED in one gate
+sitting while each keeps its own `cursor_dispatch` record and its own diff critique. The rule text,
+its failure modes and its non-compressible inspection floor live in `docs/CURSOR-LANE.md` →
+**Harvest procedure (pipelined lane)**, which is the owner; this paragraph only names it so a
+planner reading about routing here knows the latency objection already has an answer. Nothing in it
+touches this file's review requirements — pipelining removes waiting, never checking. One
+consequence belongs HERE rather than there, because it lands on the default this section sets: the
+lane's slowness was never a control, but it throttled volume in a lane that has never rejected a PR
+on quality, so removing it makes the Cursor-first default bite harder than it has yet. That is the
+recorded price of the tie-break above, carried on PATCH-NOTES item 19, not a reason to stop.
+
 Grok capacity is used liberally — critique always, plus drafting, research and large-text summarization
 through the Grok CLI — and every word of it enters as UNVERIFIED input to a Claude gate under Hard
 Rule 3: Grok never writes to the repo, in this lane or any other, and widening its INPUT role does not

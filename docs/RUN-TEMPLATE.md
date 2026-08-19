@@ -73,6 +73,25 @@ record PER RUN — never a merged record — each naming its own target, disposi
 single scribe landing may carry several records. SIGNIFICANT and SURGERY-class runs are gated
 individually, and a run whose classification is contested leaves the batch and is gated alone.
 
+BATCH HARVEST (rule owner: docs/CURSOR-LANE.md → Harvest procedure, which defines HARVEST-READY and
+the eligibility test — read it, this is a pointer). This sitting also SWEEPS any harvest-ready
+Cursor PRs and you may review and merge several together. RECORD EACH OUTCOME SEPARATELY: one
+cursor_dispatch record per PR with its own outcome, and one Grok diff critique per PR at its own
+depth. ONE RECORD, ONE PR, both types — a critique whose target lists several PRs, or a dispatch row
+whose branch_or_pr names several, still passes the validator and is still a violation. Re-query CI
+before acting on it rather than trusting a baton string, and re-critique any diff whose base moved
+after its critique ran. Judge scope per PR — an out-of-scope PR is CLOSED UNMERGED however clean its
+siblings are — and a PR that is significant, contested, or outside docs/** and tools/** leaves the
+batch and is harvested alone. The floor does not move with batch size: CI green + a Grok diff
+critique + a Claude gate merge, every PR, every time. If you are ALSO writing an autopilot
+gate_ratification this sitting, its dispositions_reviewed must ENUMERATE each PR's critique record;
+one run-level record may cover the sitting but may not blur which PR got which read.
+If you end this sitting with a green PR still unharvested, NAME IT in the baton (number, branch,
+task, verify-docs run id + when you observed it, who holds the poll now) AND say why it was not
+harvested. NAMING IS NOT HARVESTING: a named PR is an outstanding obligation you are carrying
+forward, never a swept one, and a sitting that names instead of merging has not completed the
+harvest — it has recorded that it did not. Nothing polls on its own.
+
 LEAN SCRIBE (from v4.1.16, once ratified): the scribe landing your record verifies only its own
 LANDED line and the validator exit; re-reading the Drive mirror for the content it just landed
 moves to the NEXT run's self-brief, which journals what it found as the compensating control. Name
@@ -118,6 +137,21 @@ CONSTRAINTS: never touch money, ledgers, credentials, or third-party accounts; n
 OPEN A PULL REQUEST — never push to main. Your PR is UNVERIFIED input, not a landed change.
 PR DESCRIPTION MUST CARRY: this task statement verbatim, plus your own self-review notes — what you
   changed, what you deliberately did not change, and anything you are unsure about.
+HARVEST EXPECTATION (docs/CURSOR-LANE.md → Harvest procedure): <name the unit that polls this PR>
+  starts polling it AT DISPATCH — now, not when your build finishes — and begins the review the
+  moment verify-docs goes green: Grok critique of the diff, then a Claude gate merge. So open the PR
+  as soon as it is COMPLETE against the DEFINITION OF DONE above — and not one commit earlier. This
+  means do not sit on finished work waiting for a tidier moment; it does NOT license opening an
+  unfinished tip and letting the reviewer find the gaps. An incomplete PR does not become acceptable
+  because the lane is pipelined, and "it was open early" is not a defence for it. If your branch falls
+  behind main, UPDATE IT and let the checks re-run; also say so in the PR description. Saying so is
+  a courtesy to the reviewer and NOT a substitute for the re-run — CI green on a superseded base is
+  not evidence, and a disclosed stale green is still a stale green. If main moved because a Claude
+  wave landed the four generated files (docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md,
+  docs/SYSTEM-MAP.html) while you were building, expect a conflict or a red check there: say so and
+  leave those files to the gate, which re-runs both generators over the merged tree. Never hand-edit
+  a generated file to resolve it. Nothing here merges without CI green on the current base + that
+  Grok diff critique + the Claude gate merge, however fast the lane is moving.
 ```
 
 ## 4 — PLAN prompt (paste to Fable for novel work)
@@ -172,7 +206,21 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    branch to PR to CI to Grok diff critique to gate merge); it never covers system surgery, package
    files, Hard Rules or canonical merges, which are exactly the work you refused to spawn in step 0,
    and it never covers a hot-path repair — main red, CI failing, or the broken thing being the lane's
-   own validators, workflows or landing script. Grok is used liberally for drafting, research and
+   own validators, workflows or landing script.
+   ORDER THE WAVE — any wave carrying Cursor work DISPATCHES CURSOR FIRST and HARVESTS LAST
+   (docs/CURSOR-LANE.md → Harvest procedure, which owns this rule). The dispatch goes out BEFORE the
+   Claude crews start building, so Cursor build time overlaps Claude work instead of following it;
+   the harvest — CI green on the current base, Grok diff critique, gate merge — happens at the end
+   of the wave. The plan NAMES WHO POLLS the PR and says the poll starts at dispatch. The poller is
+   a CREW unit or the GATE at its sitting, NEVER you mid-run: polling a pull request is crew work
+   written into a work order, not supervision, so it does not touch step 3 (you stay out of the
+   room). Dispatch early only work that does not depend on text this wave is still writing, because
+   the agent reads the briefing that exists at dispatch time; carry anything it does need INLINE in
+   the dispatch. Expect an early PR that touches docs/ or tools/ to collide with this wave over the
+   four generated files — that is staleness, not failure, and the gate re-runs both generators over
+   the merged tree rather than hand-merging them. Pipelining removes WAITING, never CHECKING: every
+   PR still merges on CI green plus a Grok diff critique plus a Claude gate merge, whatever the
+   schedule says. Grok is used liberally for drafting, research and
    large-text summarization as UNVERIFIED input to a Claude gate — never as an author; governance text
    (package files, CLAUDE.md, Hard Rules, PATCH-NOTES, the journal) is Claude-authored end to end and
    Grok's role there is critique only. This directive changes routing preference and nothing else: no

@@ -12,8 +12,8 @@
 > spot-check the hashes yourself. Read the canonical documents in full on ANY conflict, gap or
 > staleness — and read the gate and authority documents directly, always, on surgery-class runs.
 
-SELF-DIGEST: 96b96de4dc0038ba08c70ea3eb3ff78255ba0871c6fefb1fb0f9f0267e64267f
-MANIFEST-DIGEST: c721b76197844b9019cf131c403dded23b95bf107aaa930661d31c811f8ccfae
+SELF-DIGEST: f45ded30c1d7233d6cf6004533f6dcfe8077228caace9ee7c8d81ed2cecfdefe
+MANIFEST-DIGEST: 9a2131b73da4bfedbff9e194ffb97845824455185d793ddc4a1428e46b4bc78b
 
 ## Current state at a glance
 
@@ -21,7 +21,7 @@ MANIFEST-DIGEST: c721b76197844b9019cf131c403dded23b95bf107aaa930661d31c811f8ccfa
 - Canonical repo: private GitHub `chrispcariello/autonomy-system`; `main` is canon.
 - Public read-only Drive mirror of `docs/**` only — that is Grok's read surface, and
   `AGENTS.md` plus `tools/**` are NOT mirrored there. Verify those in the repo/clone.
-- Open items: **18 listed, 12 open**.
+- Open items: **19 listed, 13 open**.
 - Newest version-history row, verbatim from `docs/SYSTEM-CURRENT.md`:
 
 > - **v4.1.16** — (this document) ADDED: the SPEED PACK and automatic LANE BRIEFINGS. New `tools/gen_brief.py` (stdlib, deterministic, no wall-clock) reads the canonical documents and generates three files: `docs/BRIEF-PACK.md` (the crew operating brief — Hard Rules and the other authority text extracted VERBATIM, never paraphrased, plus the critique ladder, the record schemas read out of the validator itself, landing tiers, the routing directive, open items, `docs/LATEST-HANDOFF.md` in full, and a MANIFEST of every source with its sha256), `docs/GROK-CONTEXT.txt` (the snapshot prepended to EVERY Grok prompt file, with pure-ASCII / no-double-quote / no-apostrophe / no-dash-led-line / 1500-char constraints ENFORCED by the generator) and repo-root `AGENTS.md` (the standing briefing Cursor and other outside agents read). `tools/validate_journal.py --all` gains a BRIEF-PACK STALENESS CHECK: every manifest source and generated output is re-hashed and any mismatch FAILs naming the stale files, an absent pack skips cleanly, and a `SELF-DIGEST` catches a hand-edited pack; self-test grows from 11 to 17 cases. RULES: crews SELF-BRIEF from the pack and trust it only after that check passes, with canonical documents winning every conflict and surgery-class runs reading them directly; any run touching `docs/**` or `tools/**` REGENERATES in the same commit (the validator FAIL is the mechanical backstop, and this is what keeps Grok and Cursor current on every update); the gate SCRIBE is LEAN (own `LANDED` line + validator exit only, Drive CONTENT re-read deferred to the next run's self-brief as a journaled compensating control, gate may still order full verification); ROUTINE runs may be BATCH-GATED with one `gate_ratification` record PER RUN, never merged, while significant and surgery runs are gated individually; and PARALLEL CREWS may fan out only over DISJOINT file sets with one designated scribe for shared state, serialized fetch-before-finalize landings, one HANDOFF per crew and one gate sweeping the wave. No Hard Rule, model-split, critique-depth, hard-stop or write-authority change. HONEST LIMITS, recorded not waived: a fresh pack proves the SOURCES have not moved, never that the pack summarises them well; deleting the pack makes the check skip rather than fail; the run journal is deliberately outside the manifest; `AGENTS.md` and `tools/**` are NOT mirrored to Drive (docs-only sync), so they are verified in the repo; and whether a Cursor agent reads `AGENTS.md` at all is an assumption, mitigated by naming both files in the dispatch template. Status: WRITTEN, not PROVEN — exit is the generator and the staleness check live on `main` with all three generated files present and fresh, AND the first subsequent run self-briefing via the pack with the lean-scribe compensating control journaled (PATCH-NOTES open item 18)
@@ -401,8 +401,9 @@ re-open or renumber an item from this pack — read the section itself.
 | 16 | CLOSED | Autopilot lane (one-paste bookends with gate fix-loop) |
 | 17 | CLOSED | Owner routing directive + mandatory usage receipts |
 | 18 | CLOSED | Speed pack + lane auto-briefings (v4.1.16), extended by the LIVING SYSTEM MAP |
+| 19 | OPEN | NEW |
 
-Count line in force: **18 listed, 12 open**
+Count line in force: **19 listed, 13 open**
 
 ## docs/LATEST-HANDOFF.md — copied in full
 
@@ -419,137 +420,94 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 
 ---
 
-**GATE STATUS: RATIFIED — 2026-08-19.** The Fable gate has ruled on the LIVING SYSTEM MAP run: verdict
-**PASS**, **0 overturns**, `fable_phases` **2** so 2 − 2 = **zero fix loops**, on commit
-`f13b1e5f26fa58e825795ac0bb2743962469cd6d`. The ratification artifact is `gate_ratification` **record
-79** in `docs/run-journals/run-journal.jsonl`, which carries the dispositions reviewed, the three
-ANCHOR SPOT-CHECKS the map's own rules make a gate duty, the Drive read the gate performed EARLY at
-its own discretion, and the exceptions. The crew's in-run critique dispositions are therefore no
-longer PROVISIONAL: all 24 bullets of records 75/76/77 were read in full and both rejections were
-AUDITED and UPHELD. **PATCH-NOTES open item 18 is CLOSED by this record** — installation and first
-exercise, not ongoing compliance, with residuals (i)–(viii) carried on the closed item as standing
-limits — and the board's count moves to **18 listed, 12 open**. This is also the FIRST landing written
-under the LEAN SCRIBE law as the scribe's standing shape.
-
-The eight-field HANDOFF block below is the crew's baton. The gate has filled in the SHA the crew could
-not know at write time (a file cannot contain its own landing SHA), split the Drive line into what the
-gate itself verified and what stays deferred, recorded its own commit at the end of `Changed:`, and
-rewritten `Open items:` to the ratified state. The **Ask Grok** question is PRESERVED VERBATIM —
-ratification records a verdict on a run, it does not rewrite the run's question.
+**GATE STATUS: PENDING — awaiting the Fable end gate.** This is the CREW's baton for the CURSOR HARVEST
+PROCEDURE run, written before ratification. Nothing below is PASS or CLOSED: the crew's critique
+dispositions (journal records **80, 81, 82**) are PROVISIONAL until a `gate_ratification` record exists,
+and PATCH-NOTES item **19** was deliberately ADDED OPEN rather than self-closed — its exit requires a
+real harvested PR that this run did not perform. The run classified itself **SIGNIFICANT, non-surgery**
+and is **batch-INELIGIBLE** on both tests (`Significant: yes`, and it edited three files on the
+eligibility floor list), so it is gated individually.
 
 ```
 HANDOFF
-SHA: f13b1e5f26fa58e825795ac0bb2743962469cd6d — LANDED on main, Tier 2 (local-shell land.ps1 into the
-  standing clone C:\Users\chris\autonomy-system-live), and READ BACK by the gate from that clone
-  rather than accepted from the crew's report. Base/parent e009fd3, the ratified record-74 gate
-  commit. No tag: this run carried no version bump. GATE FILL-IN: the crew's baton said "STAGED
-  (unpushed)" at write time, which was correct then and is exactly what tools/gen_map.py prints until
-  a gate supplies the number. This ratification commit is the one carrying the file now — verify with
-  git log -1; a file cannot contain its own landing SHA.
-Drive: TWO HALVES, stated separately rather than as one green line.
-  DISCHARGED BY THE GATE at 15:40Z, ahead of the deferral the gate was entitled to keep: the mirrored
-  docs/SYSTEM-MAP.html is PRESENT in folder 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE — a file that had never
-  existed on that mirror before, so presence alone is a real signal — with mimeType text/html, title
-  "Living system map — autonomy-system v4.1.16", size ~34k, read by CONTENT and not by modifiedTime.
-  That read also PROVES the tools/drive_sync.py ".html": "text/html" row this run added, which landed
-  UNPROVEN: without it the page would have mirrored as application/octet-stream, which Drive neither
-  indexes nor renders. Record 79 records the map-side check as done on that evidence — what it quotes
-  is presence, MIME type, title and size, not the H1 string named before landing — and names the two
-  strings below as the only ones still deferred.
-  STILL DEFERRED to the next run under LEAN SCRIBE, carried forward unchanged rather than quietly
-  dropped: (a) the exact string "docs/SYSTEM-MAP.html" in the mirrored docs/EFFICIENCY-MODE.md, inside
-  the sentence "writes the fourth, `docs/SYSTEM-MAP.html`" — the word "fourth" is the one-word check;
-  (b) the exact string "system-map-stale" in that same mirrored file. THIS LANDING ADDS ITS OWN, per
-  the rule that each deferral is named separately: (c) the exact string "record 79" in the mirrored
-  docs/LATEST-HANDOFF.md. Three strings, two files, one next run — and one read does not discharge a
-  deferral it was never told about.
-  ALREADY DISCHARGED, by the crew rather than by the gate: the previous deferral for e009fd3 — the
-  mirrored docs/LATEST-HANDOFF.md (Drive id 1kTmQYp3_D2ICLnocaY_SD0esgAOXXzym, modifiedTime
-  2026-08-19T12:18:05Z) was read and CONTAINS "record 74", closed by CONTENT, not by timestamp
-  (record 78).
-  NOT CHECKABLE ON DRIVE by construction: tools/gen_map.py, tools/validate_journal.py,
-  tools/drive_sync.py and AGENTS.md never reach the mirror (docs/** only) — verify those in the
-  standing clone at the landed SHA.
-Changed: tools/gen_map.py (NEW — stdlib, deterministic, zero wall-clock; imports tools/gen_brief.py
-  for SOURCES and helpers rather than copying them; generates docs/SYSTEM-MAP.html; --check exits 1
-  when the page would change; exit 2 with a loud message on a missing/empty source, on an unreadable
-  ladder/tier/lane structure, and on a BROKEN ANCHOR) · docs/SYSTEM-MAP.html (NEW, GENERATED — one
-  self-contained page, ~34KB, inline CSS/JS, no external fetch, no localStorage, five panels in lay
-  language for a non-coder Owner, light/dark, published anchor table, trailing manifest comment with
-  SELF-DIGEST + MANIFEST-DIGEST + 15 source hashes) · tools/validate_journal.py (C6 GENERALISED, not
-  forked: new check_generated_doc parameterised by a _GeneratedDoc descriptor, with check_brief_pack
-  and the new check_system_map as thin wrappers over it; --system-map-path flag; the MANIFEST FLOOR
-  and every finding shape now serve both outputs; new self-verifying SELF_TEST_CASE_COUNT constant
-  that the self-test asserts against its own case count; --self-test 18 → 26 cases, all pass) ·
-  docs/EFFICIENCY-MODE.md (SPEED PACK: four generated outputs and two generators; REGENERATION RULE
-  requires both and names system-map-stale; the journal-count lag named with map-last ordering;
-  loophole (i) extended to gen_map --check; loophole (ii) extended with the import coupling and its
-  cost; the fan-out carve-out renamed GENERATED TRIO → GENERATED SET with an explicit
-  never-hand-merge-a-generated-file rule) · docs/RUN-TEMPLATE.md (block 1 regeneration + both
-  --check runs + map-last ordering + the fact that CI runs neither --check; block 3 four outputs;
-  block 2 gate duty to spot-check three anchor rows against their paragraphs) · tools/drive_sync.py
-  (one MIME row: .html → text/html) · docs/PATCH-NOTES-CURRENT.md (item 18 EXTENDED with the fourth
-  output, the crew-side exit evidence, and four NEW named residuals; one UPDATED line; NOT closed;
-  counts UNCHANGED at 18 listed, 13 open) · docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md
-  (regenerated, same commit) · docs/LATEST-HANDOFF.md (this baton) ·
-  docs/run-journals/run-journal.jsonl (records 75-77 grok_critique passes 1-3, record 78 patch).
-  NO package files, no version bump, no tag, no .github/**, no routing or authority text.
-  GATE COMMIT (the one carrying this file, docs/** only, the FIRST commit written under the lean
-  scribe): record 79 gate_ratification appended to the journal · docs/PATCH-NOTES-CURRENT.md (item 18
-  CLOSED in the board's closed style with its evidence stack, the residuals kept on the item as
-  standing limits, a superseding 18-listed/12-open count line, and a second GATE NOTE that supersedes
-  the record-74 "stays OPEN" sentence; nothing renumbered, reordered or added) · this baton's gate
-  wording · docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md, docs/SYSTEM-MAP.html (all four
-  regenerated in this same commit, both generators, map LAST after the journal append).
+SHA: STAGED (unpushed) at write time — a file cannot contain its own landing SHA. Landing via Tier 2
+  (local-shell land.ps1 into the standing clone C:\Users\chris\autonomy-system-live), base/parent
+  78f5e253ead6b3898da0757edfd2e14ddc128ea1 (the ratified record-79 gate commit), fast-forward only.
+  No tag: this run carries no version bump. GATE: fill in the landed SHA here from git log -1 in the
+  clone rather than from the crew's report.
+Drive: NOT VERIFIED THIS RUN for this run's own landing — deferred under LEAN SCRIBE, which is the
+  standing law now that the v4.1.16 run that wrote it is ratified (record 79). The scribe verifies its
+  own LANDED line and the validator exit only.
+  DEFERRED TO THE NEXT RUN, named separately so one read cannot silently discharge three: (a) the exact
+  string "Harvest procedure (pipelined lane)" in the mirrored docs/CURSOR-LANE.md — the word
+  "pipelined" is the one-word check; (b) the exact string "NAMING IS NOT HARVESTING" in the mirrored
+  docs/RUN-TEMPLATE.md; (c) the exact string "19 listed, 13 open" in the mirrored
+  docs/PATCH-NOTES-CURRENT.md. Three strings, three files, one next run.
+  DISCHARGED BY THIS RUN, the compensating control for f13b1e5, all three strings read by CONTENT and
+  not by modifiedTime (journal record 83): the mirrored docs/EFFICIENCY-MODE.md (Drive id
+  1s42VvKYAqgrMJgw05htM38DkdJVi5V6y, text/markdown, 41349 bytes) CONTAINS "docs/SYSTEM-MAP.html" inside
+  the sentence "writes the fourth" AND CONTAINS "system-map-stale"; the mirrored docs/LATEST-HANDOFF.md
+  (Drive id 1kTmQYp3_D2ICLnocaY_SD0esgAOXXzym, text/markdown, 12714 bytes) CONTAINS "record 79", three
+  times as a literal single-line string. No deferral aged out.
+  NOT CHECKABLE ON DRIVE by construction: AGENTS.md and tools/** never reach the mirror (docs/** only) —
+  verify those in the standing clone at the landed SHA.
+Changed: docs/CURSOR-LANE.md (NEW section "Harvest procedure (pipelined lane)" — a HARVEST-READY
+  definition, (a) DISPATCH EARLY with THREE named failure modes, (b) POUNCE, (c) BATCH HARVEST with an
+  eligibility test, (d) the non-compressible inspection floor with the CLAUDE_CRITICAL credit exception
+  reconciled, (e) a split routine/significant timing expectation, plus a "What this procedure COSTS"
+  subsection carrying the bad-merge sequence; ALSO one amended sentence under Standing briefing, which
+  claimed regeneration keeps a dispatched agent current and is false under early dispatch) ·
+  docs/RUN-TEMPLATE.md (block 5 ORDER THE WAVE; block 2 BATCH HARVEST; block 3 HARVEST EXPECTATION) ·
+  docs/EFFICIENCY-MODE.md (ONE cross-reference paragraph in the Autopilot routing area, pointing at
+  CURSOR-LANE.md as the owner, no duplication) · docs/PATCH-NOTES-CURRENT.md (item 19 ADDED at the end,
+  OPEN, plus a superseding count line; nothing renumbered, reordered or closed) · docs/BRIEF-PACK.md,
+  docs/GROK-CONTEXT.txt, AGENTS.md, docs/SYSTEM-MAP.html (all four regenerated in this same commit,
+  both generators, map LAST after the journal appends) · docs/LATEST-HANDOFF.md (this baton) ·
+  docs/run-journals/run-journal.jsonl (records 80-82 grok_critique passes 1-3, record 83 patch).
+  NO package files, no version bump, no tag, no .github/**, no tools/** code, no routing or authority
+  text.
 Significant: yes
-Grok passes requested: 3 — full ladder run BEFORE landing via the Grok CLI on the Owner machine,
-  each prompt file headed by the freshly generated docs/GROK-CONTEXT.txt per the GROK CONTEXT RULE.
-  Pass 1 defects 8 bullets (exit 0, 218s, PROMPT_CHARS 14957), Pass 2 false-green 8 (exit 0, 40s,
-  PROMPT_CHARS 16875), Pass 3 adversarial 8 (exit 0, 97s, PROMPT_CHARS 18694). All three exceed the
-  1900-character guideline; the echoed PROMPT_CHARS is the compensating control, as at v4.1.14-16.
-  24 bullets, 22 APPLIED (several partially, each partial stated in its own reason), 2 REJECTED with
-  reasons. The ladder changed the artifact materially rather than decorating it: it produced the
-  four-lane correction (the page had sold one-paste autopilot as the whole Owner model), the fix to
-  "Fable appears nowhere in between" (false under the fix loop the same page describes), the
-  lean-scribe deferral disclosure on the post-land checkpoint, the bounded LGTM rule, the receipt
-  honesty line, the honest STAGED tile, the published anchor table, the "snapshot not live state"
-  warning on Panel 5, the precise CI claim, the GENERATED SET rename with the no-hand-merge rule,
-  the gate anchor spot-check duty, and three extra self-test cases (amputated map manifest,
-  hand-edited MANIFEST-DIGEST, and a decoy manifest in the rendered body).
-Open items: 18 listed, 12 open. RATIFIED AT THE GATE — item 18 (Speed pack + lane auto-briefings,
-  extended by the LIVING SYSTEM MAP) CLOSED on evidence, not on assertion, by gate_ratification
-  record 79: verdict PASS, overturns 0, fable_phases 2 so ZERO fix loops; evidence commits f13b1e5
-  (this run) plus a1097a8 and f17aa1a (ratified earlier at record 74); ladder records 75-77 with all
-  24 bullets read in full and BOTH rejections audited and UPHELD (75 b6 CI wiring — out of that
-  run's ordered scope and already pre-authorized at record 74; 77 b1 stale-paste artifact — verified
-  against the live file rather than argued); run record 78 verified against the landed content; and
-  the gate's own early Drive read. Its exit was checked field by field: all four generated outputs
-  present and FRESH, a SUBSEQUENT run self-briefed from the pack and journaled an honest sufficiency
-  verdict rather than a green tick, the lean-scribe compensating control for e009fd3 discharged by
-  CONTENT, and this run's Owner receipt carries the ROUTING LINE (Owner elected the Opus fast lane;
-  reason recorded as OWNER ORDER and SPEED; the Cursor-first default unchanged). The crew
-  deliberately did not self-close; the gate scribe closed it. ADDED: none; nothing renumbered or
-  reordered. Item 13 (Review-gate SPOF) stays open and unwaived. STILL NOT CLAIMED, closure or no
-  closure: this closes INSTALLATION and FIRST EXERCISE, not ongoing compliance and not pack QUALITY,
-  and residuals (i)-(viii) stay ON the closed item as standing limits — an anchor proves presence,
-  never preserved meaning; the map's journal count is a build-time floor that lags without going
-  stale; CI runs neither --check, so a DELETED generated file keeps --all at exit 0 (the .github/**
-  wiring stays pre-authorized for the next run that touches that path); and one crew wrote the
-  generator, the checker and the page, so the pass condition is partly circular. Exceptions carried
-  on record 79: the verify-docs CI conclusion is still NOT observed (compensating controls named
-  there — self-test 26/26, --all exit 0, both --check exit 0, and the gate's Drive read);
-  validate_journal.py --all --strict still exits 1 at base and after on legacy item 10 (pre-existing,
-  unchanged; --all, which CI runs, exits 0 both times); and there is no Python on the Owner machine,
-  so clone-side validator re-runs remain impossible and CI is the server check.
-Ask Grok: the map now publishes its own anchor table so a human can check whether each quoted phrase
-  still sits in a paragraph that MEANS the claim — but that check is unpaid human attention on the
-  one artifact nobody re-reads, and pass 3 named it as the residual the whole design rests on. What
-  is the cheapest MECHANICAL signal a generator could emit that would distinguish a phrase whose
-  surrounding paragraph still asserts the claim from one whose paragraph now negates it, WITHOUT a
-  language model in the loop and without the generator becoming a second rulebook? Second: the
-  system now has four generated outputs riding every docs/tools commit and one shared checker
-  guarding them. At what number of outputs does that stop being a briefing system and start being a
-  merge hazard, and what observable in this repo would tell the gate it has crossed that line?
+Grok passes requested: 3 — full ladder run BEFORE landing via the Grok CLI on the Owner machine, each
+  prompt file headed by docs/GROK-CONTEXT.txt per the GROK CONTEXT RULE. Pass 1 defects 8 bullets
+  (exit 0, 149s, PROMPT_CHARS 10876), Pass 2 false-green 8 (exit 0, 133s, PROMPT_CHARS 11197), Pass 3
+  adversarial 8 (exit 0, 151s, PROMPT_CHARS 11823). 24 bullets, 23 APPLIED, 1 REJECTED with a reason
+  preserved for the gate. The ladder changed the artifact materially: it produced the HARVEST-READY
+  definition, the reconciliation of the CLAUDE_CRITICAL credit exception (docs/SYSTEM-CURRENT.md line
+  207) that (d) had flatly contradicted, the THIRD dispatch-early failure mode (an early PR and its own
+  wave regenerating the same four generated files), the poller-is-never-Fable resolution of a real
+  collision with the autopilot stay-out-of-the-room rule, the batch-harvest eligibility test, the two
+  record shapes that still pass the validator, NAMING IS NOT HARVESTING, the re-critique-on-base-move
+  rule, the ordered-artifact exit on item 19, and the entire "What this procedure COSTS" subsection.
+  EXCEPTIONS, recorded not waived, all on record 83: (1) a self-reported PROMPT HYGIENE DEFECT — the
+  pass 1 prompt file was transferred with ONE line of the generated snapshot omitted (the LAST LAND
+  history row, itself already [TRUNCATED]), which breaks the GROK CONTEXT RULE instruction not to
+  substitute the snapshot; passes 2 and 3 carry it verbatim, the pass returned full depth, and the pass
+  was NOT re-run — the gate may order it; (2) all three prompts exceed the 1900-char guideline, echoed
+  PROMPT_CHARS is the standing compensating control; (3) --all --strict still exits 1 at base and after
+  on legacy item 10, unchanged, while --all (what CI runs) exits 0 both times; (4) no Python on the
+  Owner machine, so the verify-docs conclusion is NOT observed at write time.
+Open items: 19 listed, 13 open. ADDED: item 19 (Cursor harvest procedure — pounce + batch), OPEN, owner
+  Claude, exit = the FIRST REAL PR harvested under the procedure and closing on ORDERED ARTIFACTS rather
+  than narrative: a cursor_dispatch record whose ts predates that wave's Claude build, the verify-docs
+  Actions run id for the merged tip, a grok_critique record covering that PR alone cited by number, and
+  the gate merge SHA, with dispatch < critique < merge in time. Nothing renumbered, reordered or closed;
+  item 18 stays closed-on-record with its residuals as standing limits; item 13 (Review-gate SPOF) stays
+  open and unwaived. THE CREW DID NOT SELF-CLOSE ANYTHING. What this run does NOT claim: the procedure
+  has never been RUN — no PR was dispatched early, pounced on, or batch-harvested under it — and the
+  recorded price is on the item: the lane's latency was never a control but throttled volume in a lane
+  that has never rejected a PR on quality, so removing it makes the Cursor-first default bite harder,
+  and all four of the procedure's defences (HARVEST-READY, current base, re-critique, eligibility) are
+  gate readings with no mechanical enforcement, the same gap as open items 2 and 5.
+Ask Grok: pass 3 argued this procedure should not exist yet — one merged pilot, one scope rejection,
+  zero quality rejections — and that removing the lane's latency unlocks Cursor-first volume with no new
+  quality brake. That was REJECTED as a conclusion on the Owner order and APPLIED as recorded price, so
+  the question is now the Owner's, not the crew's: what OBSERVABLE in this repo would show that the lane
+  has started merging work it should have rejected, given that a quality rejection has never once
+  happened and its absence reads identically to a lane producing only good PRs? Second: every defence
+  this procedure adds is a gate reading performed on the busiest turn of the run. Which ONE of them
+  would buy the most safety if it were made mechanical instead — a required up-to-date-before-merge
+  branch rule, verify-docs as a required status check, or a validator check that no grok_critique target
+  names two PRs — and what would break the first time it fired?
 ```
 
 ## MANIFEST
@@ -567,25 +525,25 @@ Generation FAILS when it is not — the one cross-file consistency check that ex
 | `CLAUDE.md` | `cc9eed20ad0469081fb335d234940820d999b6c5c02019f6c3c13d24e90d4162` |
 | `docs/SYSTEM-CURRENT.md` | `ecd943a1db9ce51c6a33b2f339ad21ab6516657bf7a134f5f5676815ddfda200` |
 | `docs/SYSTEM-SPEC-CURRENT.md` | `f99b5f4a12da6952839a0ed9ea19295e4380174a2d9657ef0a87021c88f026a0` |
-| `docs/EFFICIENCY-MODE.md` | `82dd7024fc010686d9acc5bdbcb61a180db76f6597ec055e7b10d21cdbe17849` |
-| `docs/RUN-TEMPLATE.md` | `4b3893ae25ab54646b24c26f4f1b6306fde027fa9bfc948d454fedc896d5b42f` |
+| `docs/EFFICIENCY-MODE.md` | `fece2ea7e145eaaa84cd12438053cd3f1fb2fcb8529c0e25f3b06456c679b876` |
+| `docs/RUN-TEMPLATE.md` | `f110afdde95a6e92f89b3e5f6e41f0480b89c899ea3b1639487e2f460e829117` |
 | `docs/GROK.md` | `7635de9b23ccc1c06761a7b551f22487501d6690a4f07fe863ad1ef0448a897f` |
 | `docs/LANDING-PROTOCOL.md` | `9388e37a57a4736483b60c073fccd2fb62abb2925437cf82953e64b15fa1178a` |
 | `docs/HANDOFF-FORMAT.md` | `4db1a9a489ec090b3ce555fa4e2f537c8401662501736c172a58b4d254eb88e1` |
-| `docs/CURSOR-LANE.md` | `2ac9b16317ac93d84bf81b3a71d4cb5c954b20588373cbbcc47ebed29799813b` |
+| `docs/CURSOR-LANE.md` | `241f44fa35de93e35d6dd9e43e64190c1d778ddfd8da7929bbe7238f4762e70e` |
 | `docs/OWNER-FLOW.md` | `1caa25201c04a47c46c23d14421c9218101c107e06e9cf76f7e74ffd1cd2fcb0` |
 | `docs/NIGHTLY-HYGIENE.md` | `464ee705a33a71c764b102798bd6fa93fd0b9c9cdf90d4345509599288eed3d6` |
 | `docs/lessons/lessons.jsonl` | `99c3a9df776fbda5159ae5211daede50f9069e62601b5db2ab0434e1649f1aae` |
-| `docs/PATCH-NOTES-CURRENT.md` | `bff3f22e9e019997cc39b46528c4cdfdf76b7e1c3a25eb7da2135e041025a5da` |
-| `docs/LATEST-HANDOFF.md` | `e32b7b55200ad7ab37636b81d7049d0f329733ca1f6747a4c499418405f2cf3a` |
+| `docs/PATCH-NOTES-CURRENT.md` | `929277ada1dca466ffa55d6b8ca4b27898f9acfb2761953dc1c45b3384048978` |
+| `docs/LATEST-HANDOFF.md` | `4fc1489d8e61d651307c511a1d3e715afa4a688557c4e55ada31e8423a36fe90` |
 | `tools/validate_journal.py` | `816ea1c1f33f29c5d91950bc540bf6f5d802b27458276f633e082bae918f7ded` |
 
 Generated outputs, hashed so a hand-edit of them is detectable too:
 
 | generated file | sha256 |
 | :-- | :-- |
-| `docs/GROK-CONTEXT.txt` | `10a634eee8203ff7191b8042cc46df79642caa4522979c735c9f626c5f8353ae` |
-| `AGENTS.md` | `dd69a6944c54b2207cfc0430176d2f4d9a6476a441bf19236935eb650f868a4c` |
+| `docs/GROK-CONTEXT.txt` | `ca83d9b1b8739004a9c6dbaaa1a6c597cb613c55131c208a089ccadd7fc87e1d` |
+| `AGENTS.md` | `1c66558f69a4e405ad72885b682216b962949f78c9ca480420ec1b5a791fa8d9` |
 
 **What the MANIFEST deliberately does NOT cover, so nobody reads more into it:**
 (1) `docs/run-journals/**` — append-only evidence, not a rule source; including it would

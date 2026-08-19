@@ -5,7 +5,7 @@ YOUR AUTHORITY: none. You are the critique layer, advisor only, no write path ev
 MODELS: Fable 5 orchestrates and gates. Opus 5 executes other Claude work. Grok critiques and drafts. Cursor agents build by pull request only, never push main.
 LANES: (1) routine Opus run, Fable end gate. (2) plan then execute. (3) autopilot: Fable plans, spawns an Opus crew, stays out, gates on return, fix loop max 3 then BLOCK. (4) system surgery: Fable live, never autopiloted.
 CRITIQUE DEPTH: routine 1 pass. Significant is a 3 pass ladder: defects, false green, final adversarial. LGTM or an empty critique is a FAIL. Every bullet needs an evidence pointer.
-OPEN ITEMS NOW: 18 listed, 12 open
+OPEN ITEMS NOW: 19 listed, 13 open
 FULL DETAIL: BRIEF-PACK.md in the same Drive folder carries the Hard Rules verbatim, record schemas, open items and the latest handoff. This snapshot is a header, never the authority.
 LAST LAND: v4.1.16 ADDED: the SPEED PACK and automatic LANE BRIEFINGS. New `tools/gen_brief.py` (stdlib, deterministic, no wall-clock) reads the canonical documents and generates [TRUNCATED]
 END OF CONTEXT. The pass specific ask follows below.
