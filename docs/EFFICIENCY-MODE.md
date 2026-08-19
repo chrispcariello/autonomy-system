@@ -67,6 +67,114 @@ a PASS. Upgrading an outcome requires a new critique record — a fresh pass, jo
 opinion. A thin, late ratification therefore cannot wash a ladder: the worst it can do is be too
 lenient about what it leaves standing, and it can never manufacture the review that did not happen.
 
+### Autopilot lane
+
+The bookends above assume the Owner is the courier: he pastes the START card into an execution session,
+then pastes the GATE card into Fable later. The AUTOPILOT lane removes that walk without changing a
+single rule. The Owner makes ONE paste — block 5 of `docs/RUN-TEMPLATE.md` — into Fable, and Fable does
+the rest: it plans briefly, writes a complete standalone work order, SPAWNS the Opus execution crew
+carrying it, and then leaves the room while they work. The crew runs exactly the shape in steps 3–7
+above — self-brief, build, critique per `docs/GROK.md`, validators, best-tier landing with the journal
+record and `docs/LATEST-HANDOFF.md` in the same commit — and returns a compact HANDOFF-only report.
+Fable then gates it (step 8), and only then speaks to the Owner. Lane map in lay language:
+`docs/OWNER-FLOW.md`.
+
+**Three verdicts, and a bounded fix loop.** The gate returns `RATIFY` (it holds), `FIX`, or `BLOCK`.
+`BLOCK` is available at ANY gate, not only after the loop is spent: a hard stop, an unreachable
+critique transport, or work that cannot be finished safely blocks on the FIRST gate. A `FIX` verdict is
+not a return to the Owner: Fable writes a FIX ORDER naming exactly what is wrong and what "fixed" looks
+like, routes it back to the right hand — Opus to build, the Cursor lane when a reviewable branch is the
+better shape, Grok for another critique pass — and then RE-GATES the result. That loop repeats until
+the work is ratified, to a **maximum of 3 fix loops**. The boundary is exact: **the 3rd fix loop's
+re-gate is the last gate of the run.** If it does not ratify, there is NO 4th fix order — the run
+BLOCKS to the Owner. Every fix loop is journaled — the fix order's target and the re-gate outcome — so
+the loop count is checkable after the fact rather than remembered.
+
+**Verdict vocabulary, mapped once.** `RATIFY` / `FIX` / `BLOCK` are what the gate SAYS; `verdict` in
+the `gate_ratification` record is `PASS` or `FAIL` and nothing else. The mapping is fixed: `RATIFY` ⇒
+`verdict` `PASS`; `FIX` and `BLOCK` ⇒ `verdict` `FAIL`. A run that ends `FIX` or `BLOCK` still leaves a
+record — the record is the evidence that the gate ran, not a claim that the work is good.
+
+**A fix loop does not shortcut critique.** A fix loop that changes the diff is new work: it takes its
+own critique at the depth its content requires (`docs/GROK.md`) and journals its own `grok_critique`
+record BEFORE the re-gate. This is the conservative overturn rule applied to the loop rather than an
+exception to it — a re-gate can only turn a `FIX` into a `RATIFY` on the strength of NEW journaled
+critique evidence covering the changed text, never on the strength of having been asked twice.
+
+**One gate covers the whole autopilot run — and must therefore NAME what it covers.** However many
+crew agents Fable spawned, the run produces ONE `gate_ratification` record covering all of their landed
+work — the crew does not self-ratify and does not gate itself. Because one record blankets several
+agents, it is only honest if it enumerates them: the `target` names each crew agent's landed work (or
+the commit range that contains it), `dispositions_reviewed` covers EVERY crew `grok_critique` record in
+the run rather than a sample, and the record cites the landed SHA and those record numbers. A
+ratification that names nothing specific is a correctly-spelled row, not evidence. Until that gate
+record exists, nothing the crew landed may be called PASS or CLOSED, exactly as the Review-gate
+availability rule requires.
+
+**The FIRST gate is held to the same standard as a re-gate.** The critique requirement is not a
+fix-loop-only rule: before any `RATIFY`, the gate confirms the crew's own pre-land ladder is present at
+the depth the work required (`docs/GROK.md`) and that every bullet was dispositioned. A first-gate
+`RATIFY` over a thin or absent ladder is exactly the false green this lane must not create, and the
+verdict in that case is `FIX` (run the missing passes) or `BLOCK`, never `RATIFY`. The gate reads the
+CONTENT of those records, not merely their existence: a `grok_critique` record whose bullets never
+touch the defect the FIX ORDER named does not satisfy the re-gate. Recorded honestly — that judgement
+is the gate's, unmechanised, and mechanising it is PATCH-NOTES open items 2 and 5.
+
+**Fable REFUSES the spawn when the order is surgery.** The exemption above is a control step, not a
+label: before spawning anything, Fable classifies the order, and if it touches Hard Rules, routing,
+safety, hard stops or package versions it does NOT spawn a crew — it runs the job as lane 4 (Fable
+live) and says so to the Owner. The refusal happens before the crew exists, because after the crew
+exists there is nobody in the room to notice.
+
+**A FIX routed to Grok is an order for a CRITIQUE PASS, never a write.** Fable chooses the hand, and
+the choice is bounded by what each hand is: Opus builds, the Cursor lane produces a reviewable branch
+that still merges only through CI + Grok + a Claude gate, and Grok returns bullets. Grok has no write
+path, permanently (`docs/GROK.md`) — every doc change a Grok bullet produces is made by a Claude unit
+that owns it. Routing a FIX to Grok never makes the critique layer an author.
+
+**The gate is POST-LAND in this lane, by design — say it plainly.** The crew lands before Fable ever
+reads the work, so ratification cannot PREVENT a landing; what it can do is overturn dispositions,
+re-open items, order fixes and refuse the PASS. The pre-land protection is the crew's own Grok ladder
+plus the validators, exactly as in the manual lanes. Anyone reading `RATIFY` as "the gate stopped the
+bad commit" has it wrong: the gate stops the bad CLAIM. And when a run BLOCKS after the loop is spent,
+the landed commits are NOT rolled back — history here is fast-forward-only and force-push is forbidden
+(`docs/LANDING-PROTOCOL.md`). The BLOCK handoff must instead name the landed SHA range as UNRATIFIED
+and carry it as an open item, so unratified work is visible rather than quietly assumed good.
+
+**Nothing watches the crew between spawn and return, and this file does not pretend otherwise.** Fable
+is out of the room by design, so there is no live supervisor, no heartbeat and no timeout — the crew
+owns its own run to a finished HANDOFF or an honest BLOCKED handoff, and a crew agent that cannot
+finish returns BLOCKED rather than going quiet. A crew that never returns at all leaves the run
+unclosed until someone next looks; like the accepted-risk auto-reopen, that is evaluated
+RETROACTIVELY, at the Owner's next contact. Because of that, Fable may only spawn against a work order
+that carries an explicit SCOPE and explicit STOP CONDITIONS — an order with neither is an order a
+crew can run forever, and it is refused at the plan step rather than bounded later. A parked run is not
+a finished run: `BLOCKED_ON_CRITIQUE` clears only through the queue-clear procedure in `docs/GROK.md`,
+and anything BLOCKED more than 24h is already one of the six mid-run re-entry triggers below. Note the
+honest asymmetry: parking is a REPORTING state, not a kill switch — a run can be parked on the Owner's
+side while a spawned crew is still running and still spending, and nothing here stops that crew. The
+gate's single, unmechanised content judgement is likewise the only check that a ladder was real rather
+than well-formed; that is the lane's central weakness, and mechanising it is PATCH-NOTES open items 2
+and 5, not a claim made here.
+
+**The phase-count proxy, for this lane.** `fable_phases` counts an autopilot run as **2** — the plan
+and the gate — **plus 1 for each fix loop** that actually ran, where one fix loop means writing the fix
+order AND the re-gate that closes it (they are one Fable phase, not two). So a clean autopilot run
+records 2, one fix loop records 3, and the ceiling case records 5. Because the base is fixed at 2, the
+number of fix loops is always recoverable as `fable_phases - 2` — no separate counter, no second place
+to disagree. This is the same honest proxy as above and carries the same caveat: it counts Fable's
+SPEAKING MOMENTS, not tokens, because per-model token spend still has no meter. A count above 2 on an
+autopilot run is not a defect — it is the fix loop being visible, which is the point of recording it.
+
+**What autopilot does NOT change.** Critique depth is untouched: significant work still takes the full
+3-pass ladder before landing, and an unreachable transport still parks the run as
+`BLOCKED_ON_CRITIQUE` rather than landing on faith. The conservative overturn rule above is unchanged —
+a fix loop that ends in ratification still needs NEW journaled critique evidence to move a FAIL to a
+PASS; the loop cannot wash a missing ladder by re-gating harder. Hard stops still stop the run. And
+**system surgery is still exempt**: a change to Hard Rules, routing, or package versions is Fable-live
+work by definition and may not be autopiloted, because rule changes are exactly the case where the cost
+of the careful reader is the point.
+
 ## Mid-run re-entry — the ONLY six triggers
 
 (a) a Hard-Rule-6 trigger: money, legal, third-party contact, credentials · (b) a proposed change to
