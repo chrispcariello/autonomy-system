@@ -40,13 +40,44 @@ Honest limits below.
 - [x] **Pilot dispatch + PR through the full review lane** — DONE 2026-08-18: PR #2, CI run
   32196858563 green, Grok critique record 55, gate merge 5ce249f.
 
+## Standing briefing: `AGENTS.md` + `docs/BRIEF-PACK.md` (v4.1.16)
+
+Cursor background agents read a repo-root `AGENTS.md` when one exists, so `tools/gen_brief.py`
+generates one: what this repo is, the lane's scope, the conventions, and a pointer to
+`docs/BRIEF-PACK.md` for current state. It is regenerated on every run that touches `docs/**` or
+`tools/**`, which is what keeps a dispatched agent current without a human re-briefing it.
+
+**That convention is an assumption, so it is not relied on alone.** Three separate things are
+assumed and NONE of them is observable from this surface: that a Cursor agent loads `AGENTS.md` at
+all; that it loads it before rather than after the dispatch text; and that a long-running or
+re-used agent RE-READS it after a regeneration rather than working from the copy it cached when
+its session began. That third one is the quiet one — a briefing that updates on every land is only
+current to an agent that re-reads it, so a stale in-agent copy is invisible here and the freshness
+machinery does nothing about it. Belt and braces: the CURSOR DISPATCH template in
+`docs/RUN-TEMPLATE.md` NAMES both files explicitly in its first line, so the instruction arrives
+through the one channel we know the agent reads. Neither file is a permission system either; the
+enforcement is unchanged and mechanical — the scope check on the PR, `verify-docs` CI, the Grok
+diff critique, and the Claude gate merge. A briefing makes the rules legible before the work
+starts; it never makes an out-of-scope PR mergeable.
+
+**A Cursor PR that touches `docs/**` or `tools/**` must also carry regenerated briefings.** The
+regeneration rule (`docs/EFFICIENCY-MODE.md`) is enforced by `validate_journal.py`, which
+`verify-docs` runs on EVERY pull request, so a PR with a stale `docs/BRIEF-PACK.md` fails CI. The
+dispatch template tells the agent to run `python3 tools/gen_brief.py` and commit the three
+outputs; where the agent's environment cannot run Python it says so in the PR description and the
+Claude gate regenerates before merging. The failure mode is a red check and a slower merge, never
+a silently stale briefing.
+
 ## Dispatch procedure
 
 1. The gate (or an execution session under the gate's order) writes a dispatch from the CURSOR
-   DISPATCH template in `docs/RUN-TEMPLATE.md`: task, `cursor/<slug>` branch, definition of done,
+   DISPATCH template in `docs/RUN-TEMPLATE.md`: the "read AGENTS.md and docs/BRIEF-PACK.md first"
+   line, task, `cursor/<slug>` branch, definition of done,
    constraints, "open a PR — never push main", and the PR-description requirements. **Scope is
    `docs/**` and `tools/**` only**, set by the template; a PR that touches anything else is
-   OUT OF SCOPE and is closed without merge, not fixed up by the reviewer.
+   OUT OF SCOPE and is closed without merge, not fixed up by the reviewer. The journal,
+   `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md` are never touched from this lane —
+   they are the gate's evidence surfaces and the Claude unit that owns a run writes them.
 2. Journal it — one record per dispatch, `type` `"cursor_dispatch"`, with `task`, `branch_or_pr`
    (the `cursor/<slug>` branch, replaced by the PR number or URL once it opens), `outcome`
    (`opened` | `merged` | `closed` | `abandoned`), and the run's `retrieval_ref`.

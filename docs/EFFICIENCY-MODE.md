@@ -27,7 +27,10 @@ files. The package block is the rule; this file is how a run actually executes i
 8. **Fable gate — MANDATORY, the end bookend.** Reads `docs/LATEST-HANDOFF.md` + the journal tail,
    ratifies or overturns the execution unit's dispositions, verifies the Drive CONTENT string, and
    returns a verdict plus one surplus note. It appends a `gate_ratification` record (below) — that
-   record, not the verdict prose, is what makes the ratification checkable later.
+   record, not the verdict prose, is what makes the ratification checkable later. From v4.1.16,
+   once ratified, the LEAN SCRIBE rule below lets the gate's own scribe DEFER that Drive CONTENT
+   read to the next run's self-brief under stated conditions; the check moves, it is never
+   dropped, and until the next run journals it the landing is described as UNVERIFIED.
 
 ## The Fable budget
 
@@ -271,6 +274,160 @@ PASS; the loop cannot wash a missing ladder by re-gating harder. Hard stops stil
 **system surgery is still exempt**: a change to Hard Rules, routing, or package versions is Fable-live
 work by definition and may not be autopiloted, because rule changes are exactly the case where the cost
 of the careful reader is the point.
+
+## The SPEED PACK — self-brief from the generated brief, then verify it
+
+`tools/gen_brief.py` reads the canonical documents and writes three GENERATED files:
+`docs/BRIEF-PACK.md` (the crew brief), `docs/GROK-CONTEXT.txt` (the snapshot that heads every
+Grok prompt) and `AGENTS.md` (the repo-root briefing outside agents read). None of them is a
+rule source. They are a fast path to current state, and the rules below are what keep them from
+becoming a slow path to confident wrongness.
+
+**SELF-BRIEF VIA PACK.** A crew reads `docs/BRIEF-PACK.md` FIRST, and may trust it only after
+the freshness check passes — `python3 tools/validate_journal.py --all` (its BRIEF-PACK staleness
+check recomputes every manifest hash) or, where the validator cannot run, a manual spot-check of
+the MANIFEST hashes. A pack that has not been checked is an unverified summary, and reading one
+is not a self-brief. On ANY conflict between the pack and a canonical document, ANY gap the pack
+does not cover, or ANY staleness signal, the crew reads the canonical documents in full and the
+canonical document wins — the pack never resolves a disagreement in its own favour. **Surgery-class
+runs read the gate and authority documents DIRECTLY regardless**: `CLAUDE.md`, both package
+files, this file, `docs/GROK.md`, `docs/LANDING-PROTOCOL.md`, `docs/HANDOFF-FORMAT.md`. A change
+to the rules is exactly the case where reading a summary of the rules is the wrong move, and the
+pack's own header says so. Honest limit, not waived: freshness proves the SOURCES have not moved
+since generation. It proves nothing about whether the pack summarises them WELL, and nothing
+about the run journal, which is deliberately not a manifest source.
+
+**REGENERATION RULE.** Any run that changes `docs/**` or `tools/**` MUST re-run
+`python3 tools/gen_brief.py` and commit its three outputs IN THE SAME COMMIT as the change. This
+is the mechanism that keeps Grok and Cursor briefed on every update without anyone remembering
+to brief them. The mechanical backstop is the validator: a changed source with an unregenerated
+pack is a `brief-pack-stale` FAIL naming the files that moved, and `verify-docs` CI runs the same
+check on every push to `main` and every pull request. **Ordering matters and is not optional:**
+the generator reads `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md`, so regenerate
+AFTER those are final and before the commit. The run journal is excluded from the manifest on
+purpose, so journal appends may follow. Two limits stated rather than implied: deleting the pack
+makes the check SKIP cleanly rather than fail — it catches drift, not deletion — and a
+regeneration is only as honest as the sources it ran against, so it certifies currency, never
+correctness. Three loopholes named rather than papered over. (i) **Deletion beats the check** — an
+absent pack skips cleanly, so the detector for a deleted or never-generated pack is
+`python3 tools/gen_brief.py --check` (exit 1 when any output is missing or would change), which
+belongs in the pre-land step alongside the validator, not in the validator. (ii) **The source list
+is a closed set** — a rule-bearing file outside the MANIFEST can change with every hash still
+matching, so adding a new rule document means adding it to `SOURCES` in the generator in the same
+run that creates it. (iii) **A fresh pack reproduces contradictions faithfully** — if two canonical
+documents disagree, the pack ships both claims and flags neither; cross-file consistency is
+PATCH-NOTES open item 2 and is still unbuilt, so a green staleness check is not a green rulebook.
+
+**GROK CONTEXT RULE.** Every Grok prompt file — critique pass, drafting, research,
+summarization — BEGINS with the current contents of `docs/GROK-CONTEXT.txt`, then the
+pass-specific ask. Mechanics and the failure modes: `docs/GROK.md`.
+
+**LEAN SCRIBE.** The gate scribe that lands a `gate_ratification` record verifies exactly two
+things about its own landing: that `land.ps1` printed `LANDED <sha>` and that
+`validate_journal.py` exited 0. Re-verifying the Drive-mirror CONTENT of what it just landed
+moves to the NEXT run's self-brief, which reads the mirror and journals the result as the
+COMPENSATING CONTROL for the deferral. Say plainly what this trades: the gap between landing and
+verification is now one run wide instead of one turn wide, so a broken sync is discovered later
+than it used to be, and a run that never happens never discovers it. That is accepted to buy
+gate speed, and the gate MAY still order full verification at landing whenever it judges the
+stakes warrant — a version bump, a rule change, or any landing whose failure would be expensive
+to find late. The compensating control is only real when the next run actually journals it;
+a next-run self-brief that skips the mirror read has quietly removed the check rather than
+deferred it. **Effective only once the v4.1.16 run that wrote this rule is itself RATIFIED** —
+that run's own scribe follows the law in force when it landed and verifies its Drive content at
+the gate, because a rule cannot license the run that is still asking for permission to exist.
+
+**BATCH GATING.** Fable may gate several ROUTINE runs in one sitting. What may NOT be batched is
+the record: ONE `gate_ratification` record PER RUN, never merged, each naming its own target,
+its own `dispositions_reviewed` and its own verdict — a merged record cannot be overturned per
+run, and a wave that fails halfway would otherwise be recorded as one indivisible outcome. One
+scribe landing may CARRY several such records in a single commit; that is a transport saving,
+not a review saving. SIGNIFICANT and SURGERY-class runs are ALWAYS gated individually, and
+batching never lowers the bar for any run in the batch: each still needs its own critique records
+at its own depth, and one failing run in a batch fails alone rather than dragging the others or
+being dragged by them. The abuse to watch for, named so a gate can refuse it: a batch used to
+push a borderline-significant run through on routine attention. When a run's classification is
+contested, it leaves the batch and is gated alone.
+
+**BATCH ELIGIBILITY is a hard test, not a judgement call, precisely because "routine" is the word
+this rule can be evaded through.** A run is INELIGIBLE for batching — gated individually,
+whatever it calls itself — if it changed any of: a Hard Rule, routing, safety rules or hard
+stops; either package file; `CLAUDE.md`; anything under `tools/**`; the run journal's schema; or
+this file, `docs/RUN-TEMPLATE.md`, `docs/GROK.md`, `docs/LANDING-PROTOCOL.md`,
+`docs/CURSOR-LANE.md`, `docs/HANDOFF-FORMAT.md` or `docs/lessons/lessons.jsonl`. **The path list
+is a FLOOR, not the test** — a denylist can always be walked around by editing something not on
+it, so the governing rule is semantic and sits above it: **any run whose HANDOFF says
+`Significant: yes` is ineligible for batching, full stop**, and so is any run that changed the
+MEANING of a control regardless of which file carried it. "Restatement of an existing rule" is a
+routine category for CRITIQUE DEPTH; it is not a licence to batch a rule document's edit, and
+relabelling a control change as a restatement to buy one pass and a batched gate is the exact
+evasion these two tests exist to block. When unsure → not batchable, the same direction the
+significance test already runs in. **The SPLIT-RUN evasion is named too**, because it defeats a
+per-run test by construction: a set of runs that TOGETHER change a control is batch-ineligible
+even when each one looks routine alone, and the gate applies the test to the BATCH as a whole
+before it applies it run by run. Honest limit: nothing mechanically classifies a run or notices
+that three runs add up to one rule change, so this is gate discipline like `fable_phases` and the
+receipt — open items 2 and 5. And be precise about what batching costs: one record per run
+preserves the RECORD, not the attention. Reading four runs in one sitting is less adversarial than
+reading one, which is why the eligibility tests are drawn tight rather than left to appetite. And a batch NEVER pools deferred verification: if the runs in it deferred Drive
+CONTENT reads under LEAN SCRIBE, each deferral is named separately and the next run reads all of
+them — one read does not discharge N landings.
+
+**PARALLEL CREWS (fan-out).** One plan may spawn N crews at once, under conditions that are
+requirements, not preferences:
+- **DISJOINT file sets.** Each crew's scope is declared in its work order and no two overlap.
+  Overlap is not resolved later; it is a planning error caught before the spawn.
+- **Shared state has ONE writer — with the journal exception stated exactly, because the
+  unqualified version contradicts an older rule.** `docs/PATCH-NOTES-CURRENT.md` and
+  `docs/LATEST-HANDOFF.md` are written ONLY by the designated closer/scribe, whose landing is
+  LAST. The run journal is different: the standing contract requires each unit's `grok_critique`
+  records to ride the SAME commit as the fixes they produced, so each crew DOES append its own
+  records — but only inside its OWN landing commit, never into a working copy a sibling is also
+  editing. Because landings serialize, those appends serialize too; a crew that has not landed
+  holds its records rather than writing them early. The closer appends the run-level record last.
+  Any crew touching PATCH-NOTES or LATEST-HANDOFF is racing a sibling it cannot see.
+  **Journal appends are APPEND-ONLY AT END OF FILE, and "rebase" here means one specific thing.**
+  A crew whose base moved rebuilds its own UNLANDED commit on the fetched tip and re-appends its
+  lines at EOF; it never rewrites landed history, which `docs/LANDING-PROTOCOL.md` forbids
+  outright ("No force-push, no rebase of landed history, ever"). Because the appends are at EOF
+  and the landings serialize, the merge is deterministic — but nothing MECHANICALLY prevents a
+  crew from resolving a conflict by dropping a sibling's line, so the closer's last job before
+  the baton is to check the journal's record count and numbering against the crews it dispatched.
+  A wave whose record count does not reconcile is not closed.
+- **`docs/LATEST-HANDOFF.md` is ONE file and stays one file.** It holds the CLOSER's baton, and
+  because it is the gate's only inbox that baton MUST ENUMERATE every crew — each crew's landed
+  SHA, its file set and its critique records — or the gate reads the last crew's facts and
+  silently gates a wave it cannot see. Each crew still returns its own HANDOFF block to the
+  orchestrator; the file carries the consolidated one.
+- **The GENERATED TRIO is shared state too, and only the CLOSER regenerates it.**
+  `docs/BRIEF-PACK.md`, `docs/GROK-CONTEXT.txt` and `AGENTS.md` are rewritten by every run that
+  touches `docs/**` or `tools/**`, so under the regeneration rule as written EVERY crew in a wave
+  would rewrite the same three files — a guaranteed collision even when the task file sets are
+  perfectly disjoint. The fan-out carve-out is exact: crews in a wave do NOT regenerate; the
+  designated closer runs `tools/gen_brief.py` once, in the CLOSING commit, after every sibling has
+  landed. The intervening commits are knowingly stale and the validator will say so on any of
+  them; the wave is not finished until the closer's commit clears the check. Single-crew runs are
+  unaffected — they regenerate in their own commit, as the rule says.
+- **Landings SERIALIZE, and the CLOSER lands LAST.** Every crew fetches `origin/main` immediately
+  before finalizing and rebases onto the current tip; the landing protocol is fast-forward-only,
+  so a stale bundle base is rejected rather than forced. Two crews landing from the same base is
+  the collision this rule exists to prevent, and the rejection is the detector of last resort —
+  it fires after the work, not before. A crew landing AFTER the closer is a protocol violation,
+  not a late arrival: the closer's baton and the gate's sweep both describe a wave that is
+  already complete, so the wave stays OPEN and unratified until that commit is accounted for.
+- **Each crew returns its OWN HANDOFF block**, and ONE gate sweeps the whole wave with one
+  `gate_ratification` record per RUN in it, enumerating every crew agent and every critique
+  record it reviewed.
+- **The receipt lists EVERY agent**, per the routing directive; a receipt naming one agent for a
+  wave of four is a receipt that has already lost track of the run.
+
+**Fan-out is the WRONG shape for dependent steps and for trivial jobs**, and this run is the
+worked example: v4.1.16 changed a generator, a validator, four rule documents, both package files
+and the open-items board, all of which read each other, so it ran as ONE Opus crew and said so on
+the run record. Splitting interdependent edits across crews that cannot see each other buys
+parallelism and pays for it in merge conflicts and half-consistent rules; splitting a ten-minute
+job buys nothing and pays a spawn, a work order and a gate sweep. Fan out for VOLUME over
+independent surfaces, never to look busy.
 
 ## Mid-run re-entry — the ONLY six triggers
 

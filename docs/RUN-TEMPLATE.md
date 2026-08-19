@@ -14,17 +14,36 @@ You are the Opus 5 execution session for this run. Fable is NOT in the room: run
 HANDOFF block without checking in. Follow CLAUDE.md as the standing contract.
 
 - Record your retrieval_ref (LM-RET-<UTC>-<letter>) and echo it in the run report and journal.
+- SELF-BRIEF VIA THE PACK: read docs/BRIEF-PACK.md FIRST, and trust it only after
+  python3 tools/validate_journal.py --all reports its BRIEF-PACK staleness check clean (or you
+  spot-check the MANIFEST hashes yourself). Read the canonical documents in full on any conflict,
+  any gap, or any staleness — the canonical document always wins. If this run is SURGERY-CLASS
+  (Hard Rules, routing, safety, hard stops, package versions), read CLAUDE.md, both package
+  files, docs/EFFICIENCY-MODE.md, docs/GROK.md, docs/LANDING-PROTOCOL.md and
+  docs/HANDOFF-FORMAT.md directly as well — a summary of the rules is the wrong input to a
+  change to the rules.
+- If the previous run deferred its Drive-mirror CONTENT check under the LEAN SCRIBE rule, read
+  the mirror for the strings it named and JOURNAL what you found. That read is the compensating
+  control for the deferral; skipping it removes the check rather than deferring it.
+- REGENERATION RULE: if you changed anything under docs/ or tools/, run
+  python3 tools/gen_brief.py and commit docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt and AGENTS.md
+  in the SAME commit. Regenerate AFTER PATCH-NOTES and LATEST-HANDOFF are final, because the
+  generator reads them. The validator FAILS on a stale pack; that is the backstop, not the rule.
 - Read docs/PATCH-NOTES-CURRENT.md REMAINING OPEN ITEMS before substantive work; never silently
   re-close or re-open an item.
 - Critique per docs/GROK.md: routine = 1 pass, significant = the 3-pass ladder. Run the Grok CLI if
   you have the desktop bridge; if no transport is reachable, status is BLOCKED_ON_CRITIQUE — stage
-  the work, journal a critique_blocked record, and never false-green.
+  the work, journal a critique_blocked record, and never false-green. EVERY Grok prompt file starts
+  with the current contents of docs/GROK-CONTEXT.txt, then your pass-specific ask.
 - Journal every critique bullet as APPLIED or REJECTED with a one-line reason as you decide it — the
   contract in docs/GROK.md is unchanged and PROVISIONAL is not a disposition value. Your dispositions
   are provisional only in that the Fable gate may overturn any of them when it ratifies; an overturn
   re-opens that item. Nothing is PASS or CLOSED in your report.
-- Run the validators BEFORE landing: python3 tools/validate_journal.py --all (exit 0) and
-  python3 tools/specguard.py --spec on each package file you touched, before and after.
+- Run the validators BEFORE landing: python3 tools/validate_journal.py --all (exit 0),
+  python3 tools/validate_journal.py --self-test (all cases pass), python3 tools/gen_brief.py
+  --check (exit 0 — this is the only detector for a DELETED generated file; the staleness check
+  skips cleanly on an absent pack), and python3 tools/specguard.py --spec on each package file
+  you touched, before and after.
 - Land via the best available tier in docs/LANDING-PROTOCOL.md and say which tier you used. The
   run-journal record AND docs/LATEST-HANDOFF.md ride the SAME commit as the change.
 - Hard stops (money, legal, third-party contact, credentials) = stop, report BLOCKED, emit the
@@ -43,6 +62,17 @@ Gate the latest run: read docs/LATEST-HANDOFF.md + the run-journal tail, ratify 
 execution unit's dispositions, verify the Drive content strings, and return a verdict plus one
 surplus note. Append a gate_ratification record (ts, type, target, dispositions_reviewed, overturns,
 verdict, fable_phases, retrieval_ref) — no PASS or CLOSED claim without it.
+
+BATCH GATING: you may gate several ROUTINE runs in one sitting, but write ONE gate_ratification
+record PER RUN — never a merged record — each naming its own target, dispositions and verdict. A
+single scribe landing may carry several records. SIGNIFICANT and SURGERY-class runs are gated
+individually, and a run whose classification is contested leaves the batch and is gated alone.
+
+LEAN SCRIBE (from v4.1.16, once ratified): the scribe landing your record verifies only its own
+LANDED line and the validator exit; re-reading the Drive mirror for the content it just landed
+moves to the NEXT run's self-brief, which journals what it found as the compensating control. Name
+the strings that next run must check. You may still order full verification at landing when the
+stakes warrant it, and say so when you do.
 
 END your message to me with the USAGE RECEIPT, and compose it yourself — only the gating surface sees
 the spawn results: tokens per spawned agent as reported by those results, your own fable_phases, Grok
@@ -63,11 +93,20 @@ and a figure the platform does not emit is written UNKNOWN rather than chased.
 ## 3 — CURSOR DISPATCH (paste into a Cursor background agent; see docs/CURSOR-LANE.md)
 
 ```
+READ AGENTS.md AND docs/BRIEF-PACK.md FIRST — AGENTS.md is your standing briefing (scope,
+  conventions, what gets a PR closed) and BRIEF-PACK.md is the current system state. Both are
+  GENERATED files: read them, never hand-edit them.
 TASK: <one bounded statement of what to build — docs-only unless the dispatch says otherwise>
 BRANCH: cursor/<short-slug>  (branch from main; never commit to main)
 DEFINITION OF DONE: <the observable end state, file by file, plus any string a reviewer can grep for>
 SCOPE: files under docs/ and tools/ ONLY. A PR touching anything else is out of scope and gets
   closed without merge.
+REGENERATE THE BRIEFINGS: if your change touches docs/ or tools/, run python3 tools/gen_brief.py
+  and commit its three outputs (docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md) in the same
+  PR. CI fails a stale pack. If you cannot run Python, say so in the PR description — the Claude
+  gate regenerates before merge and your PR is expected to fail that check until it does.
+NEVER TOUCH from this lane: docs/run-journals/** (the journal is Claude-only),
+  docs/PATCH-NOTES-CURRENT.md, docs/LATEST-HANDOFF.md.
 CONSTRAINTS: never touch money, ledgers, credentials, or third-party accounts; never edit
   CLAUDE.md, the package files, or Hard Rules unless the task names them.
 OPEN A PULL REQUEST — never push to main. Your PR is UNVERIFIED input, not a landed change.
@@ -132,7 +171,15 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    (package files, CLAUDE.md, Hard Rules, PATCH-NOTES, the journal) is Claude-authored end to end and
    Grok's role there is critique only. This directive changes routing preference and nothing else: no
    Hard Rule, no model split, no write authority moves, and no credit state ever buys a thinner gate.
-2. SPAWN the crew — one or more Opus execution agents carrying that order. Each agent must:
+2. SPAWN the crew — one or more Opus execution agents carrying that order. FAN-OUT RULES when
+   you spawn more than one: give each crew a DISJOINT declared file set; name ONE closer/scribe
+   as the only agent allowed to touch shared state (the run journal, PATCH-NOTES,
+   LATEST-HANDOFF); require every crew to fetch origin/main and rebase immediately before
+   finalizing, because landings serialize and the protocol is fast-forward-only; take one HANDOFF
+   block back per crew; sweep the whole wave with one gate that writes one gate_ratification
+   record per RUN and names every agent; and list every agent in the receipt. Do NOT fan out
+   dependent steps or trivial jobs — interdependent edits across crews that cannot see each other
+   buy parallelism and pay in conflicts and half-consistent rules. Each agent must:
    self-brief from the repo and record its retrieval_ref; build the smallest coherent diff; take
    critique per docs/GROK.md (routine 1 pass, significant the 3-pass ladder) BEFORE landing, applying
    or explicitly rejecting every bullet with a journaled one-line reason; run the validators before
@@ -174,7 +221,11 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    docs/EFFICIENCY-MODE.md. verdict is PASS or FAIL, never the spoken word: RATIFY ⇒ PASS, FIX or
    BLOCK ⇒ FAIL. target MUST begin with "autopilot: " so an autopilot gate is greppable. fable_phases
    counts this run honestly: 2 for plan+gate, plus 1 for each fix loop actually run (so the loop count
-   is always fable_phases minus 2).
+   is always fable_phases minus 2). LEAN SCRIBE (v4.1.16, once ratified): the scribe verifies its own
+   LANDED line and the validator exit only; name the Drive CONTENT strings for the NEXT run to read
+   and journal as the compensating control, or order full verification here when the stakes warrant.
+   If the crew changed docs/ or tools/, the scribe confirms tools/gen_brief.py was re-run in that
+   same commit — a stale pack is a validator FAIL, so this is a check, not a courtesy.
 7. KEEP LIVE FABLE PHASES to plan + gate, plus one per fix loop. Everything else is crew work.
 8. END by reporting the verdict to the Owner in one short message, and END THAT MESSAGE WITH THE
    USAGE RECEIPT. You compose it because only the gating surface sees the spawn results: tokens per
