@@ -5,7 +5,7 @@
 > to review. If this file and a canonical document disagree, **the canonical document wins**
 > and this file is stale: run `python3 tools/gen_brief.py` and commit the result.
 
-Current version: **v4.1.16**. Manifest stamp: `d6e98c601f8f03dd3f2077c56f79e927806957c9f715491e065446398b5f1425`
+Current version: **v4.1.16**. Manifest stamp: `e405e08feca76293a8d205095d68d9c8a7d81fff40e8a5fef78dc1421a2cc643`
 (the digest over the canonical sources this briefing was generated from — it must match the
 MANIFEST in `docs/BRIEF-PACK.md`).
 
