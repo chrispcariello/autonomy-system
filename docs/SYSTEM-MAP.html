@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Living system map &mdash; autonomy-system v4.1.16</title>
+<style>
+:root{
+  color-scheme: light;
+  --surface-0:#f4f3f0; --surface-1:#fcfcfb; --surface-2:#eceae5;
+  --line:#d7d4cd; --line-strong:#b9b5ab;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#6f6d67;
+  --meter-claude:#2a78d6; --meter-grok:#eb6834; --meter-free:#1baf7a; --meter-none:#6f6d67;
+  --accent:#2a78d6; --good:#1baf7a; --warn:#eda100;
+  --shadow:0 1px 2px rgba(11,11,11,.06),0 6px 18px rgba(11,11,11,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --surface-0:#121211; --surface-1:#1a1a19; --surface-2:#232322;
+    --line:#3a3a37; --line-strong:#55554f;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#a3a299;
+    --meter-claude:#3987e5; --meter-grok:#d95926; --meter-free:#199e70; --meter-none:#a3a299;
+    --accent:#3987e5; --good:#199e70; --warn:#c98500;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-0:#121211; --surface-1:#1a1a19; --surface-2:#232322;
+  --line:#3a3a37; --line-strong:#55554f;
+  --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#a3a299;
+  --meter-claude:#3987e5; --meter-grok:#d95926; --meter-free:#199e70; --meter-none:#a3a299;
+  --accent:#3987e5; --good:#199e70; --warn:#c98500;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--surface-0); color:var(--ink);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 72px}
+header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:6px}
+h1{font-size:30px;line-height:1.2;margin:0;letter-spacing:-.01em}
+.sub{color:var(--ink-2);margin:8px 0 0;max-width:62ch}
+.btn{
+  font:inherit;font-size:13px;color:var(--ink-2);background:var(--surface-1);
+  border:1px solid var(--line-strong);border-radius:999px;padding:7px 14px;cursor:pointer;
+}
+.btn:hover{color:var(--ink);border-color:var(--ink-3)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{
+  background:var(--surface-1);border:1px solid var(--line);border-radius:14px;
+  padding:22px 22px 24px;margin:22px 0;box-shadow:var(--shadow);
+}
+.panel > h2{
+  font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-3);
+  margin:0 0 4px;font-weight:700;
+}
+.panel > .lede{font-size:19px;font-weight:650;margin:0 0 16px;line-height:1.35}
+.note{font-size:13px;color:var(--ink-3);margin:16px 0 0;line-height:1.5}
+.grid{display:grid;gap:12px}
+@media(min-width:720px){.cols-2{grid-template-columns:1fr 1fr}}
+/* ---- team table ---- */
+.team{display:grid;gap:10px}
+.role{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:6px;
+  border:1px solid var(--line);border-left:5px solid var(--meter);
+  border-radius:10px;padding:13px 15px;background:var(--surface-2);
+}
+@media(min-width:760px){.role{grid-template-columns:200px minmax(0,1fr) 190px;align-items:baseline;gap:14px}}
+.role .who{font-weight:700}
+.role .what{color:var(--ink-2);font-size:14.5px}
+.meter{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:650;white-space:nowrap}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--meter);flex:0 0 auto;
+     box-shadow:0 0 0 2px var(--surface-2)}
+.m-claude{--meter:var(--meter-claude)} .m-grok{--meter:var(--meter-grok)}
+.m-free{--meter:var(--meter-free)} .m-none{--meter:var(--meter-none)}
+/* ---- flow ---- */
+.flow{display:grid;gap:10px}
+.step{
+  display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;align-items:start;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);
+}
+.step .n{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+}
+.step .t{font-weight:650}
+.step .d{color:var(--ink-2);font-size:14.5px;margin-top:2px}
+.step .tag{
+  display:inline-block;margin-top:6px;font-size:12px;font-weight:650;padding:2px 9px;
+  border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-2);background:var(--surface-1);
+}
+.fork{display:grid;gap:8px;margin-top:4px}
+@media(min-width:720px){.fork{grid-template-columns:repeat(3,1fr)}}
+.outcome{border:1px solid var(--line-strong);border-radius:10px;padding:11px 13px;background:var(--surface-2)}
+.outcome b{display:block;font-size:14px;letter-spacing:.04em}
+.outcome span{font-size:13.5px;color:var(--ink-2)}
+.outcome.ok{border-left:5px solid var(--good)}
+.outcome.fix{border-left:5px solid var(--warn)}
+.outcome.stop{border-left:5px solid var(--meter-grok)}
+/* ---- gauntlet ---- */
+.gate{display:grid;gap:0}
+.gate li{
+  list-style:none;display:grid;grid-template-columns:26px minmax(0,1fr);gap:14px;
+  padding:12px 2px 12px 0;border-bottom:1px solid var(--line);
+}
+.gate li:last-child{border-bottom:0}
+.gate .mark{
+  width:22px;height:22px;border-radius:6px;background:var(--surface-2);
+  border:1px solid var(--line-strong);display:grid;place-items:center;
+  font-size:12px;font-weight:700;color:var(--ink-2);margin-top:2px;
+}
+.gate .h{font-weight:650}
+.gate .p{color:var(--ink-2);font-size:14.5px;margin-top:2px}
+.count{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+/* ---- stat tiles ---- */
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface-2)}
+.tile .k{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.tile .v{font-size:27px;font-weight:700;line-height:1.15;margin-top:5px;font-variant-numeric:tabular-nums;
+         overflow-wrap:anywhere}
+.tile .s{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+/* ---- misc ---- */
+table.items{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.items th,table.items td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+table.items th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+table.items td.n{width:44px;font-variant-numeric:tabular-nums;color:var(--ink-3)}
+.state{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--line-strong)}
+.state.open{color:var(--ink);background:var(--surface-1)}
+.state.closed{color:var(--ink-2);background:var(--surface-1);text-decoration:none}
+details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:13.5px;font-weight:650;color:var(--ink-2)}
+summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+details p,details li{font-size:13.5px;color:var(--ink-2)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;
+     background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+footer.foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+            font-size:13px;color:var(--ink-3);line-height:1.6}
+.warnstrip{
+  border:1px solid var(--line-strong);border-left:5px solid var(--warn);border-radius:10px;
+  padding:12px 15px;background:var(--surface-2);font-size:14px;color:var(--ink-2);margin:18px 0 0;
+}
+a{color:var(--accent)}
+@media print{.btn{display:none} .panel{break-inside:avoid;box-shadow:none}}
+@media(prefers-reduced-motion:no-preference){.panel{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div>
+<h1>How this system works</h1>
+<p class="sub">A picture of the autonomy-system in plain language. It is rebuilt from the rulebook itself every time anything lands, so it cannot drift away from what the system actually does.</p>
+</div>
+<button class="btn" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+</header>
+<p class="note">Reading order: who is on the team &rarr; what one paste sets off &rarr; what every change has to survive &rarr; how the briefings keep themselves current &rarr; where things stand today.</p>
+<section class="panel" aria-labelledby="p1">
+<h2 id="p1">Panel 1</h2>
+<p class="lede">The team, and which bill each one drains</p>
+<div class="team">
+<div class="role m-claude"><div class="who">Fable</div><div class="what">The architect and the inspector. Plans the run at the start and rules on it at the end &mdash; RATIFY, FIX or BLOCK. It is the priciest seat, so it appears at the bookends and, when it sends work back, once more per fix loop &mdash; never while the crews are building.</div><div class="meter"><span class="dot" aria-hidden="true"></span>Claude meter</div></div>
+<div class="role m-claude"><div class="who">Opus crews</div><div class="what">The builders. They do all the actual writing, on the cheaper Claude seat, with the expensive seat switched off while they work.</div><div class="meter"><span class="dot" aria-hidden="true"></span>Claude meter</div></div>
+<div class="role m-grok"><div class="who">Grok</div><div class="what">The outside inspector. It attacks the work before it lands, and drafts bulk text on request. It never writes to the system &mdash; every word it produces arrives UNVERIFIED and has to survive a Claude gate.</div><div class="meter"><span class="dot" aria-hidden="true"></span>Grok bill (separate)</div></div>
+<div class="role m-free"><div class="who">Cursor</div><div class="what">A second pool of builders that costs nothing extra. Its work only enters through the pull-request door and is merged by a Claude gate, never pushed straight in.</div><div class="meter"><span class="dot" aria-hidden="true"></span>Free (bundled)</div></div>
+<div class="role m-none"><div class="who">You, the Owner</div><div class="what">One paste starts an autopilot run and you are not needed again until the verdict. In the other lanes you paste a second card to open the gate. Beyond that you are needed only for a true hard stop &mdash; money, legal, a third party, or credentials.</div><div class="meter"><span class="dot" aria-hidden="true"></span>One or two pastes</div></div>
+</div>
+<p class="note"><strong>Why the split matters:</strong> the Claude meter is the scarce one, so the design spends the other two first &mdash; the outside inspector runs on a separate bill and the second builder pool is bundled at no extra cost. Colour here is a convenience only: every row also says its meter in words.</p>
+<details><summary>Show the rules this panel is drawn from</summary><p>Anchored phrases, checked at generation time in <code>docs/SYSTEM-CURRENT.md</code> and <code>docs/GROK.md</code>: &ldquo;highest-level orchestration only&rdquo; &middot; &ldquo;Fable is priced higher than Opus on token rates&rdquo; &middot; &ldquo;all other Claude work&rdquo; &middot; &ldquo;Grok has no write path, permanently.&rdquo; &middot; &ldquo;Cursor usage draws zero Claude credit&rdquo; &middot; &ldquo;Claude usage is the scarce resource&rdquo; &middot; &ldquo;one Owner paste&rdquo;. If any of them disappears from the rulebook this page refuses to build.</p></details>
+</section>
+<section class="panel" aria-labelledby="p2">
+<h2 id="p2">Panel 2</h2>
+<p class="lede">The one-paste loop &mdash; what happens after you hit send</p>
+<p class="note" style="margin:0 0 14px"><strong>Which lane this is.</strong> There are four, and only one of them is a single paste. The loop below is <strong>Lane 3 — AUTOPILOT (one paste, hands off)</strong>. In the routine and plan-touch lanes the same machinery runs, but you paste a second card to open the gate. The four:<ul><li>Lane 1 — Routine (the cheap default)</li><li>Lane 2 — Plan-touch (novel work)</li><li>Lane 3 — AUTOPILOT (one paste, hands off)</li><li>Lane 4 — System surgery (rare, expensive, worth it)</li></ul></p>
+<div class="flow">
+<div class="step"><div class="n" aria-hidden="true">1</div><div><div class="t">You paste once</div><div class="d">One message starts everything. Nothing else is asked of you until the run reports back.</div><span class="tag">Owner</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">2</div><div><div class="t">Fable plans</div><div class="d">The architect reads the current state, decides the shape of the work and hands out the orders.</div><span class="tag">Claude meter &mdash; short</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">3</div><div><div class="t">The crews build</div><div class="d">Opus crews (and, when the job fits the PR door, Cursor) do the work. The expensive seat is off for this whole stretch.</div><span class="tag">Claude meter &mdash; cheap seat</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">4</div><div><div class="t">Grok attacks it</div><div class="d">The outside inspector tries to break the work before it lands: 1 pass for a ROUTINE change, 3 for a SIGNIFICANT one.</div><span class="tag">Grok bill</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">5</div><div><div class="t">Validators run</div><div class="d">Machine checks: the journal, the open-items board, the package sections, and whether every generated briefing is out of date. Note the gap: they catch a STALE briefing, not a DELETED one. Catching a deleted briefing is a separate step the builder runs by hand.</div><span class="tag">Free</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">6</div><div><div class="t">It lands</div><div class="d">The change is committed to the private repo and mirrored out to the read-only Drive folder the inspector reads.</div><span class="tag">Free</span></div></div>
+<div class="step"><div class="n" aria-hidden="true">7</div><div><div class="t">Fable gates it</div><div class="d">The architect returns once, reads the baton and the journal, and rules.</div><span class="tag">Claude meter &mdash; short</span></div></div>
+</div>
+<div class="fork" role="group" aria-label="The three ways a run can end"><div class="outcome ok"><b>RATIFY</b><span>The work is accepted and the run is closed on the record.</span></div><div class="outcome fix"><b>FIX</b><span>A fix order goes back to the crews and the gate runs again &mdash; at most 3 times, then it stops.</span></div><div class="outcome stop"><b>BLOCK</b><span>Available at any gate, not just at the end. Nothing is marked done that is not done.</span></div></div>
+<p class="note">Then a scorecard comes back to you: what changed, which agents ran, and what is still open. Every run ends with one. Read the cost line for what it is &mdash; nothing here meters per-model spend, so the numbers are an honest proxy, not a bill. The real meter is in your Claude account settings.</p>
+</section>
+<section class="panel" aria-labelledby="p3">
+<h2 id="p3">Panel 3</h2>
+<p class="lede">The gauntlet every change walks &mdash; six checkpoints, in order</p>
+<ul class="gate">
+<li><span class="mark" aria-hidden="true">1</span><div><div class="h">The critique ladder</div><div class="p">A ROUTINE change takes <span class="count">1</span> inspection pass. A SIGNIFICANT one takes <span class="count">3</span>, in a fixed order: Defects, False-green, Final adversarial. On significant work an empty critique or an &ldquo;LGTM&rdquo; is a FAILED pass, not a cheap win.</div></div></li>
+<li><span class="mark" aria-hidden="true">2</span><div><div class="h">The machine validators</div><div class="p"><span class="count">26</span> self-tests must pass, and the whole-repo check must come back clean, before anything is allowed to land. Those two run again automatically on the server after the push &mdash; but only those two. The extra pre-landing step that catches a DELETED briefing runs on the builder&rsquo;s machine only, so it is discipline, not a server guarantee.</div></div></li>
+<li><span class="mark" aria-hidden="true">3</span><div><div class="h">A named landing route</div><div class="p">Three routes exist and the run says which one it used:<ul><li>Tier 1 — Session-attached repo (best; the only unattended tier)</li><li>Tier 2 — Local-shell landing (default day-to-day)</li><li>Tier 3 — One-click fallback</li></ul></div></div></li>
+<li><span class="mark" aria-hidden="true">4</span><div><div class="h">The post-landing read-back</div><div class="p">Someone reads the actual words of the mirrored file to confirm the change arrived. A newer timestamp is not evidence &mdash; a broken sync can update the clock and keep the old text. Read the timing honestly: the gate is allowed to DEFER that read to the next run, so the gap between landing and confirmation can be one run wide, and a next run that never happens never discovers a broken sync. The deferral is not a waiver: the next run MUST read the mirror and write down what it found, and a gate may refuse to defer at all whenever a bad sync would be expensive to find late. If you want it checked immediately, say so &mdash; that instruction is always available to you.</div></div></li>
+<li><span class="mark" aria-hidden="true">5</span><div><div class="h">The gate</div><div class="p">The architect rules RATIFY, FIX or BLOCK and can overturn any decision the crew made.</div></div></li>
+<li><span class="mark" aria-hidden="true">6</span><div><div class="h">The permanent record</div><div class="p">Every pass, every dispatch and every ruling is written to the run journal, which held <span class="count">78</span> records when this page was built and only ever grows. Claims that cannot point at a record do not count.</div></div></li>
+</ul>
+<div class="tiles" style="margin-top:16px"><div class="tile"><div class="k">Version</div><div class="v">v4.1.16</div><div class="s">from the package title</div></div><div class="tile"><div class="k">Journal records</div><div class="v">78</div><div class="s">read at build time; the file only grows</div></div><div class="tile"><div class="k">Open items</div><div class="v">13</div><div class="s">of 18 listed &middot; 5 closed on record</div></div><div class="tile"><div class="k">Validator self-tests</div><div class="v">26</div><div class="s">read out of the checker itself</div></div></div>
+</section>
+<section class="panel" aria-labelledby="p4">
+<h2 id="p4">Panel 4</h2>
+<p class="lede">The self-briefing loop &mdash; no briefing is allowed to go quietly out of date</p>
+<p class="note" style="margin:0 0 14px">Every change to the documents or the tools rebuilds all four briefings below, in the same commit as the change. Nobody has to remember to brief anyone.</p>
+<div class="team"><div class="role m-free"><div class="who"><code>docs/BRIEF-PACK.md</code></div><div class="what">the operating brief a crew self-briefs from before it touches anything</div><div class="meter"><span class="dot" aria-hidden="true"></span>for the Opus build crews</div></div><div class="role m-free"><div class="who"><code>docs/GROK-CONTEXT.txt</code></div><div class="what">the snapshot pasted at the top of every critique prompt</div><div class="meter"><span class="dot" aria-hidden="true"></span>for Grok, the outside inspector</div></div><div class="role m-free"><div class="who"><code>AGENTS.md</code></div><div class="what">the standing briefing an agent reads when it opens the repo</div><div class="meter"><span class="dot" aria-hidden="true"></span>for Cursor and other outside agents</div></div><div class="role m-free"><div class="who"><code>docs/SYSTEM-MAP.html</code></div><div class="what">this page</div><div class="meter"><span class="dot" aria-hidden="true"></span>for you, the Owner</div></div></div>
+<div class="warnstrip"><strong>The enforcement, not the intention:</strong> if a briefing is out of date the run FAILS the validator and names the files that moved. That is what stops a briefing from rotting in place. Two limits stated plainly rather than glossed: a fresh briefing proves the sources have not moved since it was built &mdash; not that it summarises them well; and DELETING a briefing outright makes the freshness check skip rather than fail, so deletion is the one way a briefing can go quiet without a red light. The detector for that is <code>--check</code> on both generators, which runs on the builder&rsquo;s machine as a separate pre-landing step and is not repeated by the server.</div>
+<p class="note">Precedence is fixed and one-directional: <strong>the canonical document always wins</strong>. These four files are a fast path to the current state, never an authority, and nothing may be closed, ratified or landed on one of them alone.</p>
+</section>
+<section class="panel" aria-labelledby="p5">
+<h2 id="p5">Panel 5</h2>
+<p class="lede">Where the system stands right now</p>
+<div class="tiles"><div class="tile"><div class="k">Version</div><div class="v">v4.1.16</div><div class="s">package title</div></div><div class="tile"><div class="k">Last landed commit</div><div class="v">not yet</div><div class="s">the newest baton is still STAGED; the gate commit fills this in</div></div><div class="tile"><div class="k">Open items</div><div class="v">13</div><div class="s">18 listed in total</div></div><div class="tile"><div class="k">Journal records</div><div class="v">78</div><div class="s">at build time</div></div></div>
+<div class="warnstrip"><strong>Read these as a snapshot, not as live state.</strong> Every figure here was frozen when this page was built. Before acting on any of them &mdash; deciding what is still open, whether something landed, or whether to start a run &mdash; open the sources: <code>docs/LATEST-HANDOFF.md</code> for the newest run, <code>docs/run-journals/run-journal.jsonl</code> for the record, and <code>docs/PATCH-NOTES-CURRENT.md</code> for the open items. Nothing is closed, ratified or landed on the strength of this page.</div>
+<p class="note" style="margin-top:16px"><strong>What landed last:</strong> v4.1.16 — ADDED: the SPEED PACK and automatic LANE BRIEFINGS. New tools/gen_brief.py (stdlib, deterministic, no wall-clock) reads the canonical documents and generates three files: docs/BRIEF-PACK.md (the crew operating brief — Hard Rules and the other authority text extracted VERBATIM, never paraphrased, plus the c...</p>
+<p class="note"><strong>Files that run touched:</strong> tools/gen_map.py (NEW — stdlib, deterministic, zero wall-clock; imports tools/gen_brief.py for SOURCES and helpers rather than copying them; generates docs/SYSTEM-MAP.html; --check exits 1 when the page would change; exit 2 with a loud message on a...</p>
+<details><summary>Show all 18 tracked items (13 still open)</summary><p><strong>Snapshot, not the board.</strong> These states were frozen when the page was built and an item may have opened or closed since. Never close, re-open or renumber an item from this table.</p><table class="items"><thead><tr><th>#</th><th>Item</th><th>State</th></tr></thead><tbody><tr><td class="n">1</td><td>Pooled Fable/Opus budget</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">2</td><td>specguard cross-file version-sync check</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">3</td><td>SPEC team table (L48–52) still uses pre-split phrasing (&quot;Claude Code (Opus/...</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">4</td><td>v4.1.5 condensation drops remain unrestored in FOR-CLAUDE (UNVERIFIED→verif...</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">5</td><td>Write-safety auditability</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">6</td><td>Self-test pass criteria and the 3-fail counter scope remain undefined in bo...</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">7</td><td>Grok &quot;low&quot; is unquantified, so the CONSERVE_BOTH trigger stays a judgement...</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">8</td><td>Heuristic advisories</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">9</td><td>Deferred by directive, unchanged</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">10</td><td>Actions sync BLOCKED_ON_OWNER_SECRETS</td><td><span class="state closed">CLOSED</span></td></tr><tr><td class="n">11</td><td>Desktop add-repo-to-existing-session picker defect</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">12</td><td>NEW</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">13</td><td>NEW</td><td><span class="state open">OPEN</span></td></tr><tr><td class="n">14</td><td>CLI critique path independent validation</td><td><span class="state closed">CLOSED</span></td></tr><tr><td class="n">15</td><td>Cursor lane activation</td><td><span class="state closed">CLOSED</span></td></tr><tr><td class="n">16</td><td>Autopilot lane (one-paste bookends with gate fix-loop)</td><td><span class="state closed">CLOSED</span></td></tr><tr><td class="n">17</td><td>Owner routing directive + mandatory usage receipts</td><td><span class="state closed">CLOSED</span></td></tr><tr><td class="n">18</td><td>NEW</td><td><span class="state open">OPEN</span></td></tr></tbody></table><p>Titles are shortened for scanning. The authoritative list, with the full text, the owner and the exit condition for each item, is the last <code>REMAINING OPEN ITEMS</code> section of <code>docs/PATCH-NOTES-CURRENT.md</code>.</p></details>
+</section>
+<footer class="foot">
+<p><strong>Generated file &mdash; do not hand-edit.</strong> <code>tools/gen_map.py</code> writes this page from 15 canonical documents, listed with their fingerprints in the manifest comment at the end of this file. Hand edits are overwritten at the next landing, and the <code>SELF-DIGEST</code> in that manifest is what makes such an edit detectable. It rebuilds itself at every landing: any change under <code>docs/</code> or <code>tools/</code> must regenerate it in the same commit, and <code>tools/validate_journal.py --all</code> fails a run that leaves it stale.</p>
+<p><strong>Canonical documents win.</strong> This page is a picture of the rules, never the rules themselves. On any disagreement between this page and a canonical document, the document is right and this page is stale. Nothing may be closed, ratified or landed on the strength of this file.</p>
+<p><strong>What the freshness check does and does not prove.</strong> It proves the source documents have not changed since this page was built. It does not prove the page describes them well. Every lay claim above is additionally anchored to an exact phrase that must still be present in a named document, and generation fails loudly if one goes missing &mdash; but a phrase can survive inside a paragraph whose meaning was reversed, and no check here would notice that. One figure sits outside the manifest on purpose: the journal record count, because the journal is append-only evidence that grows after this page is built, so that number is a floor read at build time rather than a live reading. The last landed commit (<code>the current baton records no pushed SHA (STAGED)</code>) is read from the run baton, not from git.</p>
+<details><summary>Show every claim on this page and the exact rule it is anchored to (%d anchors)</summary><p>Each row is a lay claim, the canonical file it was checked against, and the exact phrase that had to be present for this page to build at all. This table exists so the check a machine cannot do &mdash; does the surrounding paragraph still MEAN this &mdash; costs a reviewer about a minute instead of a re-read of the whole rulebook.</p><table class="items"><thead><tr><th>Claim on this page</th><th>Checked in</th><th>Exact phrase required</th></tr></thead><tbody><tr><td>Cursor does not spend Claude credit</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Cursor usage draws zero Claude credit</td></tr><tr><td>Cursor work comes in through the PR door</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Their output enters ONLY as pull requests</td></tr><tr><td>Fable also returns once per fix loop</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>plus one per fix loop</td></tr><tr><td>Fable is the expensive seat</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Fable is priced higher than Opus on token rates</td></tr><tr><td>Fable only architects and inspects</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>highest-level orchestration only</td></tr><tr><td>Fable shows up only at the start and the end</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Fable appears only at bookends and gates.</td></tr><tr><td>Grok is used freely because it is a different bill</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Grok capacity is used liberally</td></tr><tr><td>Grok never writes</td><td><code>docs/GROK.md</code></td><td>Grok has no write path, permanently.</td></tr><tr><td>Opus crews do the building</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>all other Claude work</td></tr><tr><td>a stale briefing fails the run</td><td><code>docs/EFFICIENCY-MODE.md</code></td><td>is a `brief-pack-stale` FAIL</td></tr><tr><td>after landing we read the words, not the clock</td><td><code>docs/LANDING-PROTOCOL.md</code></td><td>Post-land verification is a Drive CONTENT check, not a timestamp check.</td></tr><tr><td>an empty critique fails a significant pass</td><td><code>CLAUDE.md</code></td><td>is a FAIL on significant work</td></tr><tr><td>any change to the docs or the tools rebuilds the briefings</td><td><code>docs/EFFICIENCY-MODE.md</code></td><td>Any run that changes `docs/**` or `tools/**` MUST re-run</td></tr><tr><td>every run ends with a receipt</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Every run ends with a USAGE RECEIPT</td></tr><tr><td>everything else arrives UNVERIFIED</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Everything else → Event Bus as UNVERIFIED</td></tr><tr><td>nothing lands before critique and the validators</td><td><code>docs/LANDING-PROTOCOL.md</code></td><td>Pre-land critique gate (every tier</td></tr><tr><td>only Claude Code writes to the live system</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Only Claude Code may perform live system writes</td></tr><tr><td>the Claude meter is the scarce one</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>Claude usage is the scarce resource</td></tr><tr><td>the Owner pastes once to start the autopilot lane</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>one Owner paste</td></tr><tr><td>the canonical document always wins</td><td><code>docs/EFFICIENCY-MODE.md</code></td><td>canonical document wins</td></tr><tr><td>the fix loop is bounded, then it blocks</td><td><code>docs/SYSTEM-CURRENT.md</code></td><td>fix-loop max 3 then BLOCK</td></tr><tr><td>the post-land read may be deferred to the next run</td><td><code>docs/EFFICIENCY-MODE.md</code></td><td>LEAN SCRIBE</td></tr><tr><td>the receipt is a proxy, not a bill</td><td><code>docs/OWNER-FLOW.md</code></td><td>nothing in this system meters per-model spend</td></tr><tr><td>there are four lanes and only one of them is a single paste</td><td><code>docs/OWNER-FLOW.md</code></td><td>The four lanes</td></tr><tr><td>this page is named in the regeneration rule as a required output</td><td><code>docs/EFFICIENCY-MODE.md</code></td><td>docs/SYSTEM-MAP.html</td></tr></tbody></table></details>
+<p>No network requests, no tracking, no stored state: this file is inert HTML and renders offline. The one control on the page is a light/dark toggle that lasts only as long as the tab is open.</p>
+</footer>
+</div>
+<script>
+(function(){
+  var b=document.getElementById('themeBtn');
+  if(!b){return;}
+  b.addEventListener('click',function(){
+    var root=document.documentElement;
+    var now=root.getAttribute('data-theme');
+    var next=(now==='dark')?'light':'dark';
+    root.setAttribute('data-theme',next);
+    b.setAttribute('aria-pressed', next==='dark' ? 'true':'false');
+    b.textContent = next==='dark' ? 'Light mode' : 'Dark mode';
+  });
+})();
+</script>
+</body>
+</html>
+<!--
+SYSTEM-MAP MANIFEST - generated by tools/gen_map.py. Do not hand-edit this file.
+The two digests and the table below are re-computed by tools/validate_journal.py --all
+(check C6) through the same code path that checks docs/BRIEF-PACK.md.
+
+SELF-DIGEST: fb8ac5e119540aceba8ee8426f9ada46a052dc579637d64249560721b1a3435f
+MANIFEST-DIGEST: 83a22904c6b8d3fc0c15ab964b18f7956fd6c2fef8c6b2aaa00d72ddcc8fa500
+
+| source | sha256 |
+| :-- | :-- |
+| `CLAUDE.md` | `cc9eed20ad0469081fb335d234940820d999b6c5c02019f6c3c13d24e90d4162` |
+| `docs/SYSTEM-CURRENT.md` | `ecd943a1db9ce51c6a33b2f339ad21ab6516657bf7a134f5f5676815ddfda200` |
+| `docs/SYSTEM-SPEC-CURRENT.md` | `f99b5f4a12da6952839a0ed9ea19295e4380174a2d9657ef0a87021c88f026a0` |
+| `docs/EFFICIENCY-MODE.md` | `82dd7024fc010686d9acc5bdbcb61a180db76f6597ec055e7b10d21cdbe17849` |
+| `docs/RUN-TEMPLATE.md` | `4b3893ae25ab54646b24c26f4f1b6306fde027fa9bfc948d454fedc896d5b42f` |
+| `docs/GROK.md` | `7635de9b23ccc1c06761a7b551f22487501d6690a4f07fe863ad1ef0448a897f` |
+| `docs/LANDING-PROTOCOL.md` | `9388e37a57a4736483b60c073fccd2fb62abb2925437cf82953e64b15fa1178a` |
+| `docs/HANDOFF-FORMAT.md` | `4db1a9a489ec090b3ce555fa4e2f537c8401662501736c172a58b4d254eb88e1` |
+| `docs/CURSOR-LANE.md` | `2ac9b16317ac93d84bf81b3a71d4cb5c954b20588373cbbcc47ebed29799813b` |
+| `docs/OWNER-FLOW.md` | `1caa25201c04a47c46c23d14421c9218101c107e06e9cf76f7e74ffd1cd2fcb0` |
+| `docs/NIGHTLY-HYGIENE.md` | `464ee705a33a71c764b102798bd6fa93fd0b9c9cdf90d4345509599288eed3d6` |
+| `docs/lessons/lessons.jsonl` | `99c3a9df776fbda5159ae5211daede50f9069e62601b5db2ab0434e1649f1aae` |
+| `docs/PATCH-NOTES-CURRENT.md` | `37559f92a07114a966959eb873fce5437475780279beed14d81d83580a2f5f08` |
+| `docs/LATEST-HANDOFF.md` | `9d59a4d79c877ad20abbe9119d1d8508952b9055314d81c9848d633deed1b446` |
+| `tools/validate_journal.py` | `816ea1c1f33f29c5d91950bc540bf6f5d802b27458276f633e082bae918f7ded` |
+-->

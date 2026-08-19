@@ -20,11 +20,13 @@ C4  --open-items   in the LAST "## REMAINING OPEN ITEMS" section, every numbered
                    false-green this check exists to surface.
 C5  --sections     both package files contain "## Critique policy" and "## Credit-Aware Routing".
                    PRESENCE ONLY — this check does not read the body or compare the two files.
-C6  --brief-pack   docs/BRIEF-PACK.md is FRESH: every source in its MANIFEST still hashes to the
-                   recorded sha256, the two other generated files still hash to their recorded
-                   values, the MANIFEST-DIGEST agrees with the rows, and the pack's own
-                   SELF-DIGEST proves it was not hand-edited. Any mismatch is a FAIL naming the
-                   stale files. An ABSENT pack is a clean skip, not a failure — see the honest
+C6  --brief-pack   the GENERATED briefings are FRESH: docs/BRIEF-PACK.md AND docs/SYSTEM-MAP.html.
+                   For each, every source in its MANIFEST still hashes to the recorded sha256,
+                   any other generated files it records still hash to their recorded values, the
+                   MANIFEST-DIGEST agrees with the rows, and its own SELF-DIGEST proves it was
+                   not hand-edited. Any mismatch is a FAIL naming the stale files. ONE checker
+                   serves both (check_generated_doc) — the map is not a second copy of this
+                   logic. An ABSENT output is a clean skip, not a failure — see the honest
                    limit in the check itself.
 
 Exit code: 0 when no FAIL was raised, 1 otherwise (ADVISORY never fails the build unless --strict).
@@ -44,6 +46,7 @@ DEFAULT_PACKAGE_FILES = (
     os.path.join("docs", "SYSTEM-SPEC-CURRENT.md"),
 )
 DEFAULT_BRIEF_PACK = os.path.join("docs", "BRIEF-PACK.md")
+DEFAULT_SYSTEM_MAP = os.path.join("docs", "SYSTEM-MAP.html")
 
 CRITIQUE_REQUIRED_KEYS = (
     "ts",
@@ -76,6 +79,13 @@ REQUIRED_SECTIONS = ("## Critique policy", "## Credit-Aware Routing")
 
 FAIL = "FAIL"
 ADVISORY = "ADVISORY"
+
+# The number of fixtures --self-test runs. It is EXPORTED because tools/gen_map.py prints it
+# on the Owner-facing map and refuses to hardcode a figure it cannot read out of the checker
+# itself. It cannot silently drift from reality: the self-test asserts its own case count
+# against this constant and FAILS the run if they disagree, so the number is a claim the code
+# checks rather than a comment.
+SELF_TEST_CASE_COUNT = 26
 
 
 class Report(object):
@@ -373,42 +383,76 @@ def _sha256_file(path):
         return hashlib.sha256(handle.read()).hexdigest()
 
 
-def check_brief_pack(pack_path, root, report):
-    """Recompute the pack's MANIFEST and fail on drift.
+class _GeneratedDoc(object):
+    """One generated briefing, described so ONE checker can verify all of them.
+
+    Adding an output to the regeneration rule must not mean forking this check: a second copy
+    of the manifest logic is a second place for it to rot, and the two copies would diverge
+    exactly when it mattered. So the mechanism below is written once and PARAMETERISED — the
+    finding codes, the file label and the generator name change; the verification does not."""
+
+    def __init__(self, label, prefix, generator, note, scope=""):
+        self.label = label          # e.g. "BRIEF-PACK.md"
+        self.prefix = prefix        # finding-code prefix, e.g. "brief-pack"
+        self.generator = generator  # e.g. "tools/gen_brief.py"
+        self.note = note            # one clause naming who this output briefs
+        self.scope = scope          # extra scope warning printed on the green summary
+
+    def code(self, suffix):
+        return "%s-%s" % (self.prefix, suffix)
+
+
+BRIEF_PACK_DOC = _GeneratedDoc(
+    "BRIEF-PACK.md", "brief-pack", "tools/gen_brief.py",
+    "the crew operating brief",
+)
+SYSTEM_MAP_DOC = _GeneratedDoc(
+    "SYSTEM-MAP.html", "system-map", "tools/gen_map.py",
+    "the Owner-facing living system map",
+    scope=" A FRESH MAP IS NOT A RATIFIED MAP: this says the page was rebuilt from unmoved "
+          "sources, never that its lay-language claims are TRUE. It is the Owner-facing "
+          "artifact, so over-reading this green line is the specific false green to avoid.",
+)
+
+
+def check_generated_doc(doc, path, root, report):
+    """Recompute a generated briefing's MANIFEST and fail on drift.
 
     This is the mechanical backstop behind the regeneration rule: a run that edits docs/**
-    or tools/** without re-running tools/gen_brief.py leaves the pack pointing at hashes the
+    or tools/** without re-running the generator leaves the output pointing at hashes the
     sources no longer have, and this check names the files that moved.
 
-    HONEST LIMITS, stated rather than implied. (a) An ABSENT pack skips cleanly — this check
-    catches DRIFT, not DELETION, so removing the pack removes the check with it, and only a
-    human or a gate notices that. (b) A fresh pack proves the sources have not moved since
-    generation; it proves nothing about whether the pack's PROSE summarises them well, nor
+    HONEST LIMITS, stated rather than implied. (a) An ABSENT output skips cleanly — this check
+    catches DRIFT, not DELETION, so removing the file removes the check with it, and only a
+    human or a gate notices that. (b) A fresh output proves the sources have not moved since
+    generation; it proves nothing about whether its PROSE summarises them well, nor
     anything about the run journal, which is deliberately not a manifest source. (c) It
     cannot tell an honest regeneration from a regeneration that also quietly rewrote a
-    canonical source — it compares the pack to the tree, never the tree to its history."""
-    if not os.path.isfile(pack_path):
+    canonical source — it compares the output to the tree, never the tree to its history."""
+    if not os.path.isfile(path):
         report.add(
             ADVISORY,
-            "brief-pack-absent",
-            pack_path,
-            "no BRIEF-PACK.md — staleness check SKIPPED (clean skip by design). This check "
-            "catches drift, not deletion: with the pack gone nothing here notices.",
+            doc.code("absent"),
+            path,
+            "no %s — staleness check SKIPPED (clean skip by design). This check "
+            "catches drift, not deletion: with %s gone nothing here notices."
+            % (doc.label, doc.note),
         )
-        if os.path.isfile(os.path.join(root, "tools", "gen_brief.py")):
+        if os.path.isfile(os.path.join(root, *doc.generator.split("/"))):
             report.add(
                 ADVISORY,
-                "brief-pack-absent-but-generator-present",
-                pack_path,
-                "tools/gen_brief.py IS installed but its pack is missing — this is the known "
+                doc.code("absent-but-generator-present"),
+                path,
+                "%s IS installed but its output is missing — this is the known "
                 "no-op path: deleting the generated files removes the staleness check with "
-                "them. The detector is `python3 tools/gen_brief.py --check` (exit 1 when any "
+                "them. The detector is `python3 %s --check` (exit 1 when any "
                 "output is missing or would change); run it in the pre-land step. Left as an "
-                "ADVISORY rather than a FAIL because a clean skip on an absent pack is the "
-                "ordered semantic (v4.1.16); the residual is recorded on PATCH-NOTES item 18.",
+                "ADVISORY rather than a FAIL because a clean skip on an absent output is the "
+                "ordered semantic (v4.1.16); the residual is recorded on PATCH-NOTES item 18."
+                % (doc.generator, doc.generator),
             )
         return
-    text = _read(pack_path, report, "C6-brief-pack")
+    text = _read(path, report, "C6-%s" % doc.prefix)
     if text is None:
         return
 
@@ -416,10 +460,10 @@ def check_brief_pack(pack_path, root, report):
     if not self_match:
         report.add(
             FAIL,
-            "brief-pack-malformed",
-            pack_path,
-            "no SELF-DIGEST line — this file does not look like a tools/gen_brief.py output; "
-            "regenerate it rather than hand-repairing it",
+            doc.code("malformed"),
+            path,
+            "no SELF-DIGEST line — this file does not look like a %s output; "
+            "regenerate it rather than hand-repairing it" % doc.generator,
         )
         return
     normalised = text.replace("SELF-DIGEST: " + self_match.group(1), "SELF-DIGEST: " + ZERO_DIGEST)
@@ -427,11 +471,11 @@ def check_brief_pack(pack_path, root, report):
     if recomputed_self != self_match.group(1):
         report.add(
             FAIL,
-            "brief-pack-hand-edited",
-            pack_path,
-            "SELF-DIGEST does not match this file's own content — BRIEF-PACK.md has been "
+            doc.code("hand-edited"),
+            path,
+            "SELF-DIGEST does not match this file's own content — %s has been "
             "hand-edited or partially regenerated. It is a generated file: run "
-            "python3 tools/gen_brief.py and commit the result.",
+            "python3 %s and commit the result." % (doc.label, doc.generator),
         )
 
     lines = text.split("\n")
@@ -462,38 +506,38 @@ def check_brief_pack(pack_path, root, report):
     if not sources:
         report.add(
             FAIL,
-            "brief-pack-malformed",
-            pack_path,
-            "MANIFEST source table is empty or unparseable — a pack with no manifest cannot be "
-            "checked for staleness, which is indistinguishable from an unchecked pack",
+            doc.code("malformed"),
+            path,
+            "MANIFEST source table is empty or unparseable — a %s with no manifest cannot be "
+            "checked for staleness, which is indistinguishable from an unchecked one" % doc.label,
         )
         return
 
     stale = []
     missing = []
     for rel, recorded in sources + outputs:
-        path = os.path.join(root, rel)
-        if not os.path.isfile(path):
+        target = os.path.join(root, rel)
+        if not os.path.isfile(target):
             missing.append(rel)
             continue
-        if _sha256_file(path) != recorded:
+        if _sha256_file(target) != recorded:
             stale.append(rel)
     if missing:
         report.add(
             FAIL,
-            "brief-pack-source-missing",
-            pack_path,
-            "listed in the BRIEF-PACK MANIFEST but absent from the tree: %s — the pack is "
-            "describing a repo that no longer exists" % ", ".join(sorted(missing)),
+            doc.code("source-missing"),
+            path,
+            "listed in the %s MANIFEST but absent from the tree: %s — it is "
+            "describing a repo that no longer exists" % (doc.label, ", ".join(sorted(missing))),
         )
     if stale:
         report.add(
             FAIL,
-            "brief-pack-stale",
-            pack_path,
-            "BRIEF-PACK.md is STALE — these files changed since it was generated: %s. Any run "
-            "that touches docs/** or tools/** must re-run python3 tools/gen_brief.py in the "
-            "SAME commit." % ", ".join(sorted(stale)),
+            doc.code("stale"),
+            path,
+            "%s is STALE — these files changed since it was generated: %s. Any run "
+            "that touches docs/** or tools/** must re-run python3 %s in the "
+            "SAME commit." % (doc.label, ", ".join(sorted(stale)), doc.generator),
         )
 
     listed = {rel for rel, _ in sources}
@@ -501,12 +545,13 @@ def check_brief_pack(pack_path, root, report):
     if amputated:
         report.add(
             FAIL,
-            "brief-pack-manifest-amputated",
-            pack_path,
-            "the BRIEF-PACK MANIFEST omits required source(s): %s. Re-hashing only what a "
+            doc.code("manifest-amputated"),
+            path,
+            "the %s MANIFEST omits required source(s): %s. Re-hashing only what a "
             "manifest still lists proves nothing if the manifest itself shrank, so this floor "
-            "lives in the validator rather than in tools/gen_brief.py — restore the source to "
-            "the generator SOURCES tuple and regenerate." % ", ".join(amputated),
+            "lives in the validator rather than in the generator — restore the source to "
+            "the SOURCES tuple in tools/gen_brief.py and regenerate."
+            % (doc.label, ", ".join(amputated)),
         )
 
     digest_match = MANIFEST_DIGEST_LINE.search(text)
@@ -517,20 +562,37 @@ def check_brief_pack(pack_path, root, report):
         if recomputed != digest_match.group(1):
             report.add(
                 FAIL,
-                "brief-pack-digest-mismatch",
-                pack_path,
+                doc.code("digest-mismatch"),
+                path,
                 "MANIFEST-DIGEST does not match the manifest rows in this same file — the "
-                "table or the digest was edited by hand; regenerate the pack",
+                "table or the digest was edited by hand; regenerate it",
             )
     report.add(
         ADVISORY,
-        "brief-pack-summary",
-        pack_path,
+        doc.code("summary"),
+        path,
         "%d manifest sources + %d generated outputs re-hashed; %d stale, %d missing. Scope: "
         "this proves the sources have not moved since generation, nothing about the journal "
-        "(deliberately not a source) or about the quality of the pack's prose."
-        % (len(sources), len(outputs), len(stale), len(missing)),
+        "(deliberately not a source) or about the quality of the prose.%s"
+        % (len(sources), len(outputs), len(stale), len(missing), doc.scope),
     )
+
+
+def check_brief_pack(pack_path, root, report):
+    """C6a — docs/BRIEF-PACK.md freshness. Thin wrapper: the mechanism is shared."""
+    check_generated_doc(BRIEF_PACK_DOC, pack_path, root, report)
+
+
+def check_system_map(map_path, root, report):
+    """C6b — docs/SYSTEM-MAP.html freshness, through the SAME checker as the pack.
+
+    The map embeds its MANIFEST in a trailing HTML comment in exactly the shape the pack uses,
+    so no parsing changes were needed here: one output format, one verifier. What this does NOT
+    cover, named because the map prints it: the journal record count on the page comes from
+    docs/run-journals/run-journal.jsonl, which is deliberately outside every manifest, so a
+    journal append leaves that number LAGGING without making the page STALE by this check. The
+    detector for that is `python3 tools/gen_map.py --check` in the pre-land step."""
+    check_generated_doc(SYSTEM_MAP_DOC, map_path, root, report)
 
 
 # ---------------------------------------------------------------------- main
@@ -543,7 +605,8 @@ def main(argv=None):
     parser.add_argument("--journal", action="store_true", help="C1 only: run-journal records")
     parser.add_argument("--open-items", action="store_true", help="C4 only: owner/exit on open items")
     parser.add_argument("--sections", action="store_true", help="C5 only: package section presence")
-    parser.add_argument("--brief-pack", action="store_true", help="C6 only: BRIEF-PACK freshness")
+    parser.add_argument("--brief-pack", action="store_true",
+                        help="C6 only: BRIEF-PACK + SYSTEM-MAP freshness")
     parser.add_argument("--all", action="store_true", help="run every check (default)")
     parser.add_argument("--strict", action="store_true", help="treat ADVISORY findings as failures")
     parser.add_argument("--root", default=".", help="repo root the default paths resolve against")
@@ -551,6 +614,7 @@ def main(argv=None):
     parser.add_argument("--open-items-path", default=None)
     parser.add_argument("--package-file", action="append", default=None)
     parser.add_argument("--brief-pack-path", default=None)
+    parser.add_argument("--system-map-path", default=None)
     parser.add_argument("--json", action="store_true", help="machine-readable output")
     parser.add_argument("--self-test", action="store_true", help="run built-in fixtures and exit")
     args = parser.parse_args(argv)
@@ -566,6 +630,7 @@ def main(argv=None):
     open_items_path = args.open_items_path or os.path.join(root, DEFAULT_OPEN_ITEMS)
     package_files = args.package_file or [os.path.join(root, p) for p in DEFAULT_PACKAGE_FILES]
     brief_pack_path = args.brief_pack_path or os.path.join(root, DEFAULT_BRIEF_PACK)
+    system_map_path = args.system_map_path or os.path.join(root, DEFAULT_SYSTEM_MAP)
 
     report = Report()
     if run_all or args.journal:
@@ -576,6 +641,7 @@ def main(argv=None):
         check_sections(package_files, report)
     if run_all or args.brief_pack:
         check_brief_pack(brief_pack_path, root, report)
+        check_system_map(system_map_path, root, report)
 
     if args.json:
         print(
@@ -790,7 +856,7 @@ def self_test():
             handle.write(template % self_digest)
         return path
 
-    def _pack_fixture(root_dir, source_body="alpha\n", output_body="gamma\n"):
+    def _seed_sources(root_dir, source_body="alpha\n"):
         os.makedirs(root_dir, exist_ok=True)
         # Every fixture satisfies the MANIFEST FLOOR, so only the amputation case below trips
         # it and the other fixtures keep testing exactly the one thing each is named for.
@@ -806,10 +872,47 @@ def self_test():
             with open(target, "w", encoding="utf-8") as handle:
                 handle.write(body)
             rows.append((name, hashlib.sha256(body.encode("utf-8")).hexdigest()))
+        return rows
+
+    def _pack_fixture(root_dir, source_body="alpha\n", output_body="gamma\n"):
+        rows = _seed_sources(root_dir, source_body)
         with open(os.path.join(root_dir, "OUT.txt"), "w", encoding="utf-8") as handle:
             handle.write(output_body)
         outputs = [("OUT.txt", hashlib.sha256(output_body.encode("utf-8")).hexdigest())]
         return _write_pack(root_dir, rows, outputs), rows, outputs
+
+    # tools/gen_map.py carries its MANIFEST in a trailing HTML COMMENT rather than a markdown
+    # table. This fixture reproduces that shape INDEPENDENTLY of the pack writer above — if the
+    # two ever needed to share code to agree, the shared checker would not really be checking
+    # two formats. Fresh must pass and every way of going stale must FAIL, same as the pack.
+    def _write_map(mapdir, rows, decoy=""):
+        digest = hashlib.sha256(
+            "\n".join("%s %s" % (rel, sha) for rel, sha in rows).encode("utf-8")
+        ).hexdigest()
+        body = [
+            "<!DOCTYPE html>",
+            '<html lang="en"><head><meta charset="utf-8"><title>fixture map</title></head>',
+            "<body><h1>fixture map</h1>" + decoy + "</body></html>",
+            "<!--",
+            "SYSTEM-MAP MANIFEST - fixture",
+            "SELF-DIGEST: %s",
+            "MANIFEST-DIGEST: " + digest,
+            "",
+            "| source | sha256 |",
+            "| :-- | :-- |",
+        ]
+        body += ["| `%s` | `%s` |" % (rel, sha) for rel, sha in rows]
+        body += ["-->", ""]
+        template = "\n".join(body)
+        self_digest = hashlib.sha256((template % ZERO_DIGEST).encode("utf-8")).hexdigest()
+        path = os.path.join(mapdir, "SYSTEM-MAP.html")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(template % self_digest)
+        return path
+
+    def _map_fixture(root_dir, source_body="alpha\n", decoy=""):
+        rows = _seed_sources(root_dir, source_body)
+        return _write_map(root_dir, rows, decoy), rows
 
     pack_cases = []
 
@@ -879,6 +982,114 @@ def self_test():
         print("PASS  absent pack skips cleanly (ADVISORY, not FAIL)")
     else:
         print("FAIL  absent-pack clean-skip case")
+
+    # ------------------------------------------------- C6 fixtures: SYSTEM-MAP
+    #
+    # The map is the FOURTH generated output of the regeneration rule and rides the SAME
+    # checker. These cases exist so that claim is proven rather than asserted: if someone
+    # later forks check_generated_doc, the fork has to keep passing all of them.
+    map_cases = []
+
+    map_fresh_root = os.path.join(workdir, "map-fresh")
+    map_fresh, _ = _map_fixture(map_fresh_root)
+    map_cases.append(("fresh map passes", map_fresh, map_fresh_root, []))
+
+    map_stale_root = os.path.join(workdir, "map-stale")
+    map_stale, _ = _map_fixture(map_stale_root)
+    with open(os.path.join(map_stale_root, "a.md"), "w", encoding="utf-8") as handle:
+        handle.write("alpha EDITED after the map was generated\n")
+    map_cases.append(("stale source fails the map", map_stale, map_stale_root, ["system-map-stale"]))
+
+    map_gone_root = os.path.join(workdir, "map-gone")
+    map_gone, _ = _map_fixture(map_gone_root)
+    os.remove(os.path.join(map_gone_root, "b.md"))
+    map_cases.append(
+        ("map manifest source deleted fails", map_gone, map_gone_root, ["system-map-source-missing"])
+    )
+
+    map_edit_root = os.path.join(workdir, "map-edited")
+    map_edit, _ = _map_fixture(map_edit_root)
+    with open(map_edit, "r", encoding="utf-8") as handle:
+        edited_map = handle.read()
+    with open(map_edit, "w", encoding="utf-8") as handle:
+        handle.write(edited_map.replace("<h1>fixture map</h1>", "<h1>hand edited</h1>"))
+    map_cases.append(
+        ("hand-edited map body fails", map_edit, map_edit_root, ["system-map-hand-edited"])
+    )
+
+    map_amp_root = os.path.join(workdir, "map-amputated")
+    os.makedirs(map_amp_root, exist_ok=True)
+    amp_body = "alpha\n"
+    with open(os.path.join(map_amp_root, "a.md"), "w", encoding="utf-8") as handle:
+        handle.write(amp_body)
+    map_amp = _write_map(
+        map_amp_root, [("a.md", hashlib.sha256(amp_body.encode("utf-8")).hexdigest())])
+    map_cases.append(
+        ("amputated map manifest fails (the FLOOR covers the map too)",
+         map_amp, map_amp_root, ["system-map-manifest-amputated"])
+    )
+
+    # The MANIFEST-DIGEST branch was never exercised by any fixture, for either output.
+    map_dig_root = os.path.join(workdir, "map-digest")
+    map_dig, _ = _map_fixture(map_dig_root)
+    with open(map_dig, "r", encoding="utf-8") as handle:
+        dig_text = handle.read()
+    tampered = re.sub(r"MANIFEST-DIGEST: [0-9a-f]{64}", "MANIFEST-DIGEST: " + ("b" * 64), dig_text)
+    # Re-stamp SELF-DIGEST so this fixture tests the manifest digest ALONE, not hand-editing.
+    zeroed = re.sub(r"SELF-DIGEST: [0-9a-f]{64}", "SELF-DIGEST: " + ZERO_DIGEST, tampered)
+    fresh_self = hashlib.sha256(zeroed.encode("utf-8")).hexdigest()
+    with open(map_dig, "w", encoding="utf-8") as handle:
+        handle.write(zeroed.replace("SELF-DIGEST: " + ZERO_DIGEST, "SELF-DIGEST: " + fresh_self))
+    map_cases.append(
+        ("map MANIFEST-DIGEST edited by hand fails", map_dig, map_dig_root,
+         ["system-map-digest-mismatch"])
+    )
+
+    # The map keeps its manifest in an HTML comment while the pack keeps it in markdown, so the
+    # ONE shared parser reads two containers. This case proves a manifest-shaped decoy in the
+    # rendered BODY cannot hide a stale source: the decoy is present when the page is written, so
+    # SELF-DIGEST is valid, and the check must still name the file that moved.
+    decoy_root = os.path.join(workdir, "map-decoy")
+    decoy_rows = (
+        "\n| source | sha256 |\n| :-- | :-- |\n| `a.md` | `%s` |\n" % ZERO_DIGEST
+    )
+    decoy_map, _ = _map_fixture(decoy_root, decoy=decoy_rows)
+    with open(os.path.join(decoy_root, "a.md"), "w", encoding="utf-8") as handle:
+        handle.write("alpha EDITED behind a decoy manifest\n")
+    # BOTH codes are expected and that is the point: the decoy rows join the parsed manifest, so
+    # the MANIFEST-DIGEST over those rows no longer matches the digest line, and the edited source
+    # is still named as stale. Injected rows are detected, not silently honoured.
+    map_cases.append(
+        ("decoy manifest in the map body cannot hide a stale source",
+         decoy_map, decoy_root, ["system-map-digest-mismatch", "system-map-stale"])
+    )
+
+    for name, map_path, map_root, expected in map_cases:
+        total += 1
+        report = Report()
+        check_system_map(map_path, map_root, report)
+        got = sorted({f["check"] for f in report.fails})
+        if got == sorted(expected):
+            passed += 1
+            print("PASS  %s" % name)
+        else:
+            print("FAIL  %s — expected %s, got %s" % (name, expected, got))
+
+    total += 1
+    report = Report()
+    check_system_map(os.path.join(workdir, "no-such-map.html"), workdir, report)
+    if not report.fails and any(f["check"] == "system-map-absent" for f in report.advisories):
+        passed += 1
+        print("PASS  absent map skips cleanly (ADVISORY, not FAIL) — the named loophole, proven")
+    else:
+        print("FAIL  absent-map clean-skip case")
+
+    if total != SELF_TEST_CASE_COUNT:
+        # SELF_TEST_CASE_COUNT is published to tools/gen_map.py, which prints it on an
+        # Owner-facing page. A constant nobody checks is a number that quietly becomes a lie.
+        print("FAIL  SELF_TEST_CASE_COUNT says %d but %d cases ran — fix the constant"
+              % (SELF_TEST_CASE_COUNT, total))
+        total += 1
 
     print("\nself-test %d/%d PASS" % (passed, total))
     return 0 if passed == total else 1

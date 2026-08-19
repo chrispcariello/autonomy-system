@@ -277,11 +277,13 @@ of the careful reader is the point.
 
 ## The SPEED PACK — self-brief from the generated brief, then verify it
 
-`tools/gen_brief.py` reads the canonical documents and writes three GENERATED files:
-`docs/BRIEF-PACK.md` (the crew brief), `docs/GROK-CONTEXT.txt` (the snapshot that heads every
-Grok prompt) and `AGENTS.md` (the repo-root briefing outside agents read). None of them is a
-rule source. They are a fast path to current state, and the rules below are what keep them from
-becoming a slow path to confident wrongness.
+Two generators read the canonical documents and write FOUR GENERATED files, one per audience.
+`tools/gen_brief.py` writes three: `docs/BRIEF-PACK.md` (the crew brief), `docs/GROK-CONTEXT.txt`
+(the snapshot that heads every Grok prompt) and `AGENTS.md` (the repo-root briefing outside agents
+read). `tools/gen_map.py` writes the fourth, `docs/SYSTEM-MAP.html` (the Owner-facing living system
+map — one self-contained page, no network, no stored state, explaining the system in lay language).
+None of the four is a rule source. They are a fast path to current state, and the rules below are
+what keep them from becoming a slow path to confident wrongness.
 
 **SELF-BRIEF VIA PACK.** A crew reads `docs/BRIEF-PACK.md` FIRST, and may trust it only after
 the freshness check passes — `python3 tools/validate_journal.py --all` (its BRIEF-PACK staleness
@@ -298,23 +300,34 @@ since generation. It proves nothing about whether the pack summarises them WELL,
 about the run journal, which is deliberately not a manifest source.
 
 **REGENERATION RULE.** Any run that changes `docs/**` or `tools/**` MUST re-run
-`python3 tools/gen_brief.py` and commit its three outputs IN THE SAME COMMIT as the change. This
-is the mechanism that keeps Grok and Cursor briefed on every update without anyone remembering
-to brief them. The mechanical backstop is the validator: a changed source with an unregenerated
-pack is a `brief-pack-stale` FAIL naming the files that moved, and `verify-docs` CI runs the same
-check on every push to `main` and every pull request. **Ordering matters and is not optional:**
-the generator reads `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md`, so regenerate
-AFTER those are final and before the commit. The run journal is excluded from the manifest on
-purpose, so journal appends may follow. Two limits stated rather than implied: deleting the pack
+`python3 tools/gen_brief.py` AND `python3 tools/gen_map.py` and commit all FOUR outputs IN THE
+SAME COMMIT as the change. This
+is the mechanism that keeps Grok, Cursor and the Owner briefed on every update without anyone
+remembering to brief them. The mechanical backstop is the validator: a changed source with an
+unregenerated pack is a `brief-pack-stale` FAIL naming the files that moved, an unregenerated map
+is the identical `system-map-stale` FAIL through the same check, and `verify-docs` CI runs both on
+every push to `main` and every pull request. **Ordering matters and is not optional:**
+both generators read `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md`, so regenerate
+AFTER those are final and before the commit. The run journal is excluded from BOTH manifests on
+purpose, so journal appends may follow — with ONE named consequence for the map, which PRINTS the
+journal record count: an append after generation leaves that number a build-time FLOOR rather than
+a live reading, so it lags without going stale, `--all` stays green by design, and the detector is
+`python3 tools/gen_map.py --check` in the pre-land step. Where a run wants the printed count exact,
+regenerate the map LAST, after the journal appends. Two limits stated rather than implied: deleting the pack
 makes the check SKIP cleanly rather than fail — it catches drift, not deletion — and a
 regeneration is only as honest as the sources it ran against, so it certifies currency, never
 correctness. Three loopholes named rather than papered over. (i) **Deletion beats the check** — an
-absent pack skips cleanly, so the detector for a deleted or never-generated pack is
-`python3 tools/gen_brief.py --check` (exit 1 when any output is missing or would change), which
+absent pack skips cleanly — and an absent MAP skips cleanly the same way, for the same reason — so
+the detector for a deleted or never-generated output is
+`python3 tools/gen_brief.py --check` AND `python3 tools/gen_map.py --check` (exit 1 when any output
+is missing or would change), which
 belongs in the pre-land step alongside the validator, not in the validator. (ii) **The source list
 is a closed set** — a rule-bearing file outside the MANIFEST can change with every hash still
 matching, so adding a new rule document means adding it to `SOURCES` in the generator in the same
-run that creates it. (iii) **A fresh pack reproduces contradictions faithfully** — if two canonical
+run that creates it. That tuple lives in `tools/gen_brief.py` and `tools/gen_map.py` IMPORTS it
+rather than copying it, so the two manifests cannot drift apart on what the rulebook is — the cost
+of that coupling, named: `gen_map.py` cannot run if `gen_brief.py` is broken or missing, and both
+fail loudly rather than half-generating. (iii) **A fresh pack reproduces contradictions faithfully** — if two canonical
 documents disagree, the pack ships both claims and flags neither; cross-file consistency is
 PATCH-NOTES open item 2 and is still unbuilt, so a green staleness check is not a green rulebook.
 
@@ -399,13 +412,19 @@ requirements, not preferences:
   SHA, its file set and its critique records — or the gate reads the last crew's facts and
   silently gates a wave it cannot see. Each crew still returns its own HANDOFF block to the
   orchestrator; the file carries the consolidated one.
-- **The GENERATED TRIO is shared state too, and only the CLOSER regenerates it.**
-  `docs/BRIEF-PACK.md`, `docs/GROK-CONTEXT.txt` and `AGENTS.md` are rewritten by every run that
+- **The GENERATED SET is shared state too, and only the CLOSER regenerates it.**
+  `docs/BRIEF-PACK.md`, `docs/GROK-CONTEXT.txt`, `AGENTS.md` and `docs/SYSTEM-MAP.html` are
+  rewritten by every run that
   touches `docs/**` or `tools/**`, so under the regeneration rule as written EVERY crew in a wave
-  would rewrite the same three files — a guaranteed collision even when the task file sets are
+  would rewrite the same four files — a guaranteed collision even when the task file sets are
   perfectly disjoint. The fan-out carve-out is exact: crews in a wave do NOT regenerate; the
-  designated closer runs `tools/gen_brief.py` once, in the CLOSING commit, after every sibling has
-  landed. The intervening commits are knowingly stale and the validator will say so on any of
+  designated closer runs `tools/gen_brief.py` and then `tools/gen_map.py` once each, in the
+  CLOSING commit, after every sibling has
+  landed. **A generated file is NEVER conflict-resolved by hand.** If a wave leaves one of the
+  four conflicted, the closer takes either side to make the merge complete and then RE-RUNS both
+  generators over the merged tree; picking ours or theirs on a generated file can keep every
+  digest green while a real source edit is silently dropped, which is the one merge outcome this
+  rule exists to make impossible. The intervening commits are knowingly stale and the validator will say so on any of
   them; the wave is not finished until the closer's commit clears the check. Single-crew runs are
   unaffected — they regenerate in their own commit, as the rule says.
 - **Landings SERIALIZE, and the CLOSER lands LAST.** Every crew fetches `origin/main` immediately

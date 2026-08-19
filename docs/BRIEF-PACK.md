@@ -12,8 +12,8 @@
 > spot-check the hashes yourself. Read the canonical documents in full on ANY conflict, gap or
 > staleness — and read the gate and authority documents directly, always, on surgery-class runs.
 
-SELF-DIGEST: abf399c2a7200bac6523099df5c081ae4ce95c9b507f2e1ab10d63004aed0721
-MANIFEST-DIGEST: 9f12ae4abcbc856d496f00af766339eddb3fb56f4dc85c023cef808658f5a5bd
+SELF-DIGEST: 9a4a9d39a495a5e3872f30c7d6c2a3a8c1e388ae7204f581d7b22fd88a1738b8
+MANIFEST-DIGEST: 83a22904c6b8d3fc0c15ab964b18f7956fd6c2fef8c6b2aaa00d72ddcc8fa500
 
 ## Current state at a glance
 
@@ -173,11 +173,13 @@ control nobody in the lane can see.
 ```
 ## The SPEED PACK — self-brief from the generated brief, then verify it
 
-`tools/gen_brief.py` reads the canonical documents and writes three GENERATED files:
-`docs/BRIEF-PACK.md` (the crew brief), `docs/GROK-CONTEXT.txt` (the snapshot that heads every
-Grok prompt) and `AGENTS.md` (the repo-root briefing outside agents read). None of them is a
-rule source. They are a fast path to current state, and the rules below are what keep them from
-becoming a slow path to confident wrongness.
+Two generators read the canonical documents and write FOUR GENERATED files, one per audience.
+`tools/gen_brief.py` writes three: `docs/BRIEF-PACK.md` (the crew brief), `docs/GROK-CONTEXT.txt`
+(the snapshot that heads every Grok prompt) and `AGENTS.md` (the repo-root briefing outside agents
+read). `tools/gen_map.py` writes the fourth, `docs/SYSTEM-MAP.html` (the Owner-facing living system
+map — one self-contained page, no network, no stored state, explaining the system in lay language).
+None of the four is a rule source. They are a fast path to current state, and the rules below are
+what keep them from becoming a slow path to confident wrongness.
 
 **SELF-BRIEF VIA PACK.** A crew reads `docs/BRIEF-PACK.md` FIRST, and may trust it only after
 the freshness check passes — `python3 tools/validate_journal.py --all` (its BRIEF-PACK staleness
@@ -194,23 +196,34 @@ since generation. It proves nothing about whether the pack summarises them WELL,
 about the run journal, which is deliberately not a manifest source.
 
 **REGENERATION RULE.** Any run that changes `docs/**` or `tools/**` MUST re-run
-`python3 tools/gen_brief.py` and commit its three outputs IN THE SAME COMMIT as the change. This
-is the mechanism that keeps Grok and Cursor briefed on every update without anyone remembering
-to brief them. The mechanical backstop is the validator: a changed source with an unregenerated
-pack is a `brief-pack-stale` FAIL naming the files that moved, and `verify-docs` CI runs the same
-check on every push to `main` and every pull request. **Ordering matters and is not optional:**
-the generator reads `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md`, so regenerate
-AFTER those are final and before the commit. The run journal is excluded from the manifest on
-purpose, so journal appends may follow. Two limits stated rather than implied: deleting the pack
+`python3 tools/gen_brief.py` AND `python3 tools/gen_map.py` and commit all FOUR outputs IN THE
+SAME COMMIT as the change. This
+is the mechanism that keeps Grok, Cursor and the Owner briefed on every update without anyone
+remembering to brief them. The mechanical backstop is the validator: a changed source with an
+unregenerated pack is a `brief-pack-stale` FAIL naming the files that moved, an unregenerated map
+is the identical `system-map-stale` FAIL through the same check, and `verify-docs` CI runs both on
+every push to `main` and every pull request. **Ordering matters and is not optional:**
+both generators read `docs/PATCH-NOTES-CURRENT.md` and `docs/LATEST-HANDOFF.md`, so regenerate
+AFTER those are final and before the commit. The run journal is excluded from BOTH manifests on
+purpose, so journal appends may follow — with ONE named consequence for the map, which PRINTS the
+journal record count: an append after generation leaves that number a build-time FLOOR rather than
+a live reading, so it lags without going stale, `--all` stays green by design, and the detector is
+`python3 tools/gen_map.py --check` in the pre-land step. Where a run wants the printed count exact,
+regenerate the map LAST, after the journal appends. Two limits stated rather than implied: deleting the pack
 makes the check SKIP cleanly rather than fail — it catches drift, not deletion — and a
 regeneration is only as honest as the sources it ran against, so it certifies currency, never
 correctness. Three loopholes named rather than papered over. (i) **Deletion beats the check** — an
-absent pack skips cleanly, so the detector for a deleted or never-generated pack is
-`python3 tools/gen_brief.py --check` (exit 1 when any output is missing or would change), which
+absent pack skips cleanly — and an absent MAP skips cleanly the same way, for the same reason — so
+the detector for a deleted or never-generated output is
+`python3 tools/gen_brief.py --check` AND `python3 tools/gen_map.py --check` (exit 1 when any output
+is missing or would change), which
 belongs in the pre-land step alongside the validator, not in the validator. (ii) **The source list
 is a closed set** — a rule-bearing file outside the MANIFEST can change with every hash still
 matching, so adding a new rule document means adding it to `SOURCES` in the generator in the same
-run that creates it. (iii) **A fresh pack reproduces contradictions faithfully** — if two canonical
+run that creates it. That tuple lives in `tools/gen_brief.py` and `tools/gen_map.py` IMPORTS it
+rather than copying it, so the two manifests cannot drift apart on what the rulebook is — the cost
+of that coupling, named: `gen_map.py` cannot run if `gen_brief.py` is broken or missing, and both
+fail loudly rather than half-generating. (iii) **A fresh pack reproduces contradictions faithfully** — if two canonical
 documents disagree, the pack ships both claims and flags neither; cross-file consistency is
 PATCH-NOTES open item 2 and is still unbuilt, so a green staleness check is not a green rulebook.
 
@@ -295,13 +308,19 @@ requirements, not preferences:
   SHA, its file set and its critique records — or the gate reads the last crew's facts and
   silently gates a wave it cannot see. Each crew still returns its own HANDOFF block to the
   orchestrator; the file carries the consolidated one.
-- **The GENERATED TRIO is shared state too, and only the CLOSER regenerates it.**
-  `docs/BRIEF-PACK.md`, `docs/GROK-CONTEXT.txt` and `AGENTS.md` are rewritten by every run that
+- **The GENERATED SET is shared state too, and only the CLOSER regenerates it.**
+  `docs/BRIEF-PACK.md`, `docs/GROK-CONTEXT.txt`, `AGENTS.md` and `docs/SYSTEM-MAP.html` are
+  rewritten by every run that
   touches `docs/**` or `tools/**`, so under the regeneration rule as written EVERY crew in a wave
-  would rewrite the same three files — a guaranteed collision even when the task file sets are
+  would rewrite the same four files — a guaranteed collision even when the task file sets are
   perfectly disjoint. The fan-out carve-out is exact: crews in a wave do NOT regenerate; the
-  designated closer runs `tools/gen_brief.py` once, in the CLOSING commit, after every sibling has
-  landed. The intervening commits are knowingly stale and the validator will say so on any of
+  designated closer runs `tools/gen_brief.py` and then `tools/gen_map.py` once each, in the
+  CLOSING commit, after every sibling has
+  landed. **A generated file is NEVER conflict-resolved by hand.** If a wave leaves one of the
+  four conflicted, the closer takes either side to make the merge complete and then RE-RUNS both
+  generators over the merged tree; picking ours or theirs on a generated file can keep every
+  digest green while a real source edit is silently dropped, which is the one merge outcome this
+  rule exists to make impossible. The intervening commits are knowingly stale and the validator will say so on any of
   them; the wave is not finished until the closer's commit clears the check. Single-crew runs are
   unaffected — they regenerate in their own commit, as the rule says.
 - **Landings SERIALIZE, and the CLOSER lands LAST.** Every crew fetches `origin/main` immediately
@@ -400,112 +419,92 @@ copy + the journal tail; the format authority is HANDOFF-FORMAT.md.
 
 ---
 
-**GATE STATUS: RATIFIED — 2026-08-19.** The Fable gate has ruled on v4.1.16: verdict **PASS**, **0
-overturns**, and **BOTH commits ratified** — `a1097a8a0063c66d5495b6be5cb1c69e438abc4a` (tag
-v4.1.16) and the correction `f17aa1a57c2ae5b32ee730b7441fa98db290e640`. The ratification artifact is
-`gate_ratification` **record 74** in `docs/run-journals/run-journal.jsonl`, which carries the
-dispositions reviewed, the gate rulings, the evidence read and the exceptions. The crew's in-run
-critique dispositions are therefore no longer PROVISIONAL. The eight-field HANDOFF block below is the
-run baton exactly as the crew wrote it and is PRESERVED VERBATIM — including the Ask Grok question;
-ratification records a verdict on it, it does not rewrite it. One field reference to read with its
-write-time in mind: the SHA field's "correction commit … which is the commit carrying this file"
-described f17aa1a at the moment that block was written; this ratification commit is the one carrying
-the file now. Item 18 stays OPEN — its exit needs the NEXT run's self-brief and the lean-scribe
-compensating control.
+**GATE STATUS: PENDING.** This run is an Opus crew run landed under efficiency mode; its critique
+dispositions are PROVISIONAL until a Fable `gate_ratification` record says otherwise. It also carries
+the crew-side evidence for PATCH-NOTES open item 18 and does NOT close it — the gate closes it.
 
 ```
 HANDOFF
-SHA: a1097a8a0063c66d5495b6be5cb1c69e438abc4a — LANDED on main, Tier 2 (local-shell land.ps1 into the
-  standing clone C:\Users\chris\autonomy-system-live), confirmed by land.ps1 printing "LANDED a1097a8
-  on main" and by git ls-remote refs/heads/main. Base/parent 4949bbc8cf04d7bdba85612e4920522c9866c51b
-  (the ratified v4.1.15 gate commit). Annotated tag v4.1.16 rides a1097a8 and is PUSHED
-  (refs/tags/v4.1.16 = 316355ab629c04ea01f0ee540558b976bcfb8939).
-  PLUS ONE CORRECTION COMMIT on top, which is the commit carrying this file (verify with git log -1;
-  a file cannot contain its own landing SHA). It is PATCH-NOTES-only + the regenerated outputs, it
-  records that the v4.1.16 package history rows understate the validator self-test (18, not 17) and
-  the generator's source count (15, not twelve), and it deliberately LEAVES those two package rows
-  frozen — a two-package-file edit is SIGNIFICANT by the written test and this run would not narrow
-  that definition by session judgment. The tag is NOT retargeted. Full reasoning: PATCH-NOTES v4.1.16
-  addendum, journal records 72-73.
-Drive: VERIFIED for a1097a8 by CONTENT, not by timestamp — mirrored docs/BRIEF-PACK.md (Drive id
-  13FsAcqayVdZ5YV2wBr0WeOSJ1XBZ8qtT, created 2026-08-19T12:02:31Z) is present in folder
-  1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE and CONTAINS "MANIFEST" and "v4.1.16". The correction commit's
-  own sync is NOT verified at write time, and an
-  advanced modifiedTime alone would not verify it either. CONTENT strings named BEFORE landing per
-  LANDING-PROTOCOL, for the gate (or, if the gate defers under the lean-scribe rule it is ratifying,
-  for the NEXT run): "MANIFEST" in the mirrored docs/BRIEF-PACK.md; "The SPEED PACK" in the mirrored
-  docs/EFFICIENCY-MODE.md (exact heading: "## The SPEED PACK — self-brief from the generated brief,
-  then verify it"); "lean scribe" appears as "**LEAN SCRIBE.**" in that same file and as "LEAN SCRIBE
-  deferral" in the mirrored docs/LANDING-PROTOCOL.md; "v4.1.16" in both mirrored package titles.
-  NOT CHECKABLE ON DRIVE, by construction: AGENTS.md, docs/GROK-CONTEXT.txt's tooling and tools/**
-  never reach the mirror (the sync covers docs/** only), so AGENTS.md and tools/gen_brief.py are
-  verified by reading the standing clone at the landed SHA instead — claiming Drive verification for a
-  file Drive never receives would be a false green with a plausible shape.
-Changed: tools/gen_brief.py (NEW — stdlib, deterministic, zero wall-clock output; reads 15 canonical
-  sources and writes three generated files; loud failure + exit 2 on a missing/empty source, on
-  cross-file drift in the shared efficiency block, and on a schema fork between the validator's
-  required keys and the document that owns each schema) · docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt,
-  AGENTS.md (NEW, all three GENERATED and committed in this same commit — the first exercise of the
-  regeneration rule) · tools/validate_journal.py (+C6 BRIEF-PACK staleness check wired into --all:
-  re-hashes every manifest source and both other generated outputs, FAILs naming stale files, enforces
-  a MANIFEST FLOOR against manifest amputation, recomputes MANIFEST-DIGEST, and detects a hand-edited
-  pack via SELF-DIGEST; --self-test 11 → 18 cases) · docs/EFFICIENCY-MODE.md (NEW "## The SPEED PACK"
-  section: self-brief via pack, regeneration rule, Grok context rule, lean scribe, batch gating with a
-  hard eligibility test, parallel-crew fan-out; step 8 amended for the lean-scribe deferral) ·
-  docs/RUN-TEMPLATE.md (block 1 self-brief + regeneration + --check in the pre-land validators; block 2
-  batch gating + lean scribe; block 3 "Read AGENTS.md and docs/BRIEF-PACK.md first" + regenerate +
-  never-touch list; block 5 fan-out rules and the scribe's regeneration check) · docs/GROK.md (GROK
-  CONTEXT RULE, the version-lag trap, the ASCII-transform hazard) · docs/CURSOR-LANE.md (standing
-  briefing section with its three unobservable assumptions; dispatch step 1) · docs/LANDING-PROTOCOL.md
-  (lean-scribe deferral invariant, non-mirrored-path invariant, gen_brief --check in the pre-land step,
-  and the WRONG "no branch protection exists" sentence corrected against CURSOR-LANE) ·
-  docs/SYSTEM-CURRENT.md + docs/SYSTEM-SPEC-CURRENT.md (v4.1.16 titles, SPEC Date/intro, history rows
-  with exactly one "(this document)" per file; ONE new byte-identical SPEED PACK line in the shared
-  "### Efficiency mode (Fable bookends)" block, plus the stale "CURSOR LANE — ACTIVATION PENDING"
-  sentence corrected to ACTIVE in both — block sha256 EQUAL across the two files after both edits) ·
-  docs/PATCH-NOTES-CURRENT.md (item 18 ADDED with its named residuals; count superseded to 18 listed /
-  13 open; v4.1.16 addendum; nothing renumbered, reordered or closed) · docs/LATEST-HANDOFF.md (this
-  baton) · docs/run-journals/run-journal.jsonl (records 68/69/70 grok_critique passes 1–3, record 71
-  patch_v4.1.16); CORRECTION COMMIT (this one, docs-only): docs/PATCH-NOTES-CURRENT.md v4.1.16
-  addendum correction paragraph, regenerated docs/BRIEF-PACK.md + AGENTS.md, this baton, and journal
-  records 72 (routine grok_critique) and 73 (patch_v4.1.16_correction).
+SHA: STAGED (unpushed)
+Drive: NOT VERIFIED AT WRITE TIME, and deliberately so — this run lands under the LEAN SCRIBE rule
+  now in force (ratified at record 74), so the Drive CONTENT re-read of THIS landing is DEFERRED to
+  the next run as a journaled compensating control. CONTENT STRINGS NAMED BEFORE LANDING, for the
+  gate or the next run to find in the mirror folder 1E-0tL4DGXk-HVYNlWUc6ccF6SzZh60OE:
+  (1) the mirrored docs/SYSTEM-MAP.html is PRESENT at all (a file that has never existed on the
+  mirror before, so presence alone is a real signal here);
+  (2) the exact string "How this system works" in that mirrored page (its H1);
+  (3) the exact string "docs/SYSTEM-MAP.html" in the mirrored docs/EFFICIENCY-MODE.md, inside the
+  sentence "writes the fourth, `docs/SYSTEM-MAP.html`" — the word "fourth" is the one-word check;
+  (4) the exact string "system-map-stale" in that same mirrored docs/EFFICIENCY-MODE.md.
+  THIS RUN DID DISCHARGE THE PREVIOUS DEFERRAL: the mirrored docs/LATEST-HANDOFF.md (Drive id
+  1kTmQYp3_D2ICLnocaY_SD0esgAOXXzym, modifiedTime 2026-08-19T12:18:05Z) was read and CONTAINS
+  "record 74", so the deferred CONTENT check for e009fd3 is closed by CONTENT, not by timestamp.
+  NOT CHECKABLE ON DRIVE by construction: tools/gen_map.py, tools/validate_journal.py,
+  tools/drive_sync.py and AGENTS.md never reach the mirror (docs/** only) — verify those in the
+  standing clone at the landed SHA. One transport note: tools/drive_sync.py previously had no MIME
+  row for .html, so the first mirrored copy of the map would have uploaded as
+  application/octet-stream, which Drive neither indexes nor renders; this run adds ".html":
+  "text/html" so the next run's CONTENT read is actually possible. That row is UNPROVEN until a
+  sync runs.
+Changed: tools/gen_map.py (NEW — stdlib, deterministic, zero wall-clock; imports tools/gen_brief.py
+  for SOURCES and helpers rather than copying them; generates docs/SYSTEM-MAP.html; --check exits 1
+  when the page would change; exit 2 with a loud message on a missing/empty source, on an unreadable
+  ladder/tier/lane structure, and on a BROKEN ANCHOR) · docs/SYSTEM-MAP.html (NEW, GENERATED — one
+  self-contained page, ~34KB, inline CSS/JS, no external fetch, no localStorage, five panels in lay
+  language for a non-coder Owner, light/dark, published anchor table, trailing manifest comment with
+  SELF-DIGEST + MANIFEST-DIGEST + 15 source hashes) · tools/validate_journal.py (C6 GENERALISED, not
+  forked: new check_generated_doc parameterised by a _GeneratedDoc descriptor, with check_brief_pack
+  and the new check_system_map as thin wrappers over it; --system-map-path flag; the MANIFEST FLOOR
+  and every finding shape now serve both outputs; new self-verifying SELF_TEST_CASE_COUNT constant
+  that the self-test asserts against its own case count; --self-test 18 → 26 cases, all pass) ·
+  docs/EFFICIENCY-MODE.md (SPEED PACK: four generated outputs and two generators; REGENERATION RULE
+  requires both and names system-map-stale; the journal-count lag named with map-last ordering;
+  loophole (i) extended to gen_map --check; loophole (ii) extended with the import coupling and its
+  cost; the fan-out carve-out renamed GENERATED TRIO → GENERATED SET with an explicit
+  never-hand-merge-a-generated-file rule) · docs/RUN-TEMPLATE.md (block 1 regeneration + both
+  --check runs + map-last ordering + the fact that CI runs neither --check; block 3 four outputs;
+  block 2 gate duty to spot-check three anchor rows against their paragraphs) · tools/drive_sync.py
+  (one MIME row: .html → text/html) · docs/PATCH-NOTES-CURRENT.md (item 18 EXTENDED with the fourth
+  output, the crew-side exit evidence, and four NEW named residuals; one UPDATED line; NOT closed;
+  counts UNCHANGED at 18 listed, 13 open) · docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md
+  (regenerated, same commit) · docs/LATEST-HANDOFF.md (this baton) ·
+  docs/run-journals/run-journal.jsonl (records 75-77 grok_critique passes 1-3, record 78 patch).
+  NO package files, no version bump, no tag, no .github/**, no routing or authority text.
 Significant: yes
-Grok passes requested: 3 (+1 routine on the correction commit) — full ladder run BEFORE landing via the Grok CLI on the Owner machine, each
-  prompt file beginning with the freshly generated docs/GROK-CONTEXT.txt (first exercise of the new
-  GROK CONTEXT RULE): Pass 1 defects 8 bullets (exit 0, 200s), Pass 2 false-green 8 (exit 0, 190s),
-  Pass 3 adversarial 8 (exit 0, 159s). 24 bullets, 22 applied (several partially, each partial stated
-  inside its own reason), 2 rejected with reasons. PROMPT_CHARS echoed 6952 / 9012 / 9991 — all three
-  exceed the 1900-char guideline and the echo is the compensating control, as at v4.1.14/v4.1.15. The
-  ladder changed the build materially rather than decorating it: it produced the cross-file drift
-  guard, the schema-fork guard, the MANIFEST FLOOR against amputation, the closer-only regeneration
-  rule for fan-out waves, the batch-eligibility hard test, and the correction of two factual errors
-  that were live in the package before this run (the stale Cursor ACTIVATION PENDING text and the
-  "no branch protection exists" sentence in LANDING-PROTOCOL). The correction commit took its own
-  ROUTINE pass (record 72, 6 bullets, 6 applied, exit 0, 160s, PROMPT_CHARS 4071) and that pass
-  OVERTURNED the crew's first plan: it had proposed editing both package files, which is SIGNIFICANT
-  by the written test, so the package edits were reverted and the correction became PATCH-NOTES-only.
-Open items: 18 listed, 13 open. ADDED item 18 (Speed pack + lane auto-briefings) at the end of the
-  authoritative list; nothing renumbered, reordered or closed this run, and item 18 is NOT self-closed
-  — its exit needs the first SUBSEQUENT run to self-brief via the pack and journal the lean-scribe
-  compensating control. Item 13 (Review-gate SPOF) stays open and unwaived. Residuals recorded ON item
-  18 rather than carried silently: deleting the generated files still beats the staleness check (an
-  absent pack skips cleanly by the ordered semantic; the detector is gen_brief --check, and wiring it
-  into CI needs .github/** which was out of scope here); batch eligibility and the Significant field
-  are unmechanised, so a split-run evasion rests on gate judgement; whether a Cursor agent reads or
-  RE-READS AGENTS.md is unobservable from this repo; and BRIEF-PACK.md is ~544 lines against the
-  ~350-line target — a deliberate cost of ladder Pass 2 b1, printed as a NOTE by the generator rather
-  than hidden, and a trim call the gate may take. Exceptions: validate_journal.py --all --strict exits
-  1 at base on legacy item 10 (pre-existing, carried unchanged; --all, which CI runs, exits 0 before
-  and after), and the verify-docs CI conclusion is not observed by this crew.
-Ask Grok: the staleness check proves the pack matches its manifest, and the new MANIFEST FLOOR stops
-  the manifest from shrinking — but nothing yet proves the pack's PROSE still describes the sources it
-  hashes, and the same run writes the generator, the floor and the pack. Given that, what is the
-  cheapest artifact a run could emit that would let a script detect a pack whose extracted sections no
-  longer correspond to the sections they claim to quote — and what would it have to be anchored to to
-  stay forgery-resistant when one crew writes both the extractor and the thing it extracts? Second, on
-  the lean scribe: the compensating control is a read the NEXT run performs, so a run that never
-  happens silently converts a deferral into a deletion. What observable signal, available in this
-  repo, would distinguish a deferral that was genuinely discharged from one that simply aged out?
+Grok passes requested: 3 — full ladder run BEFORE landing via the Grok CLI on the Owner machine,
+  each prompt file headed by the freshly generated docs/GROK-CONTEXT.txt per the GROK CONTEXT RULE.
+  Pass 1 defects 8 bullets (exit 0, 218s, PROMPT_CHARS 14957), Pass 2 false-green 8 (exit 0, 40s,
+  PROMPT_CHARS 16875), Pass 3 adversarial 8 (exit 0, 97s, PROMPT_CHARS 18694). All three exceed the
+  1900-character guideline; the echoed PROMPT_CHARS is the compensating control, as at v4.1.14-16.
+  24 bullets, 22 APPLIED (several partially, each partial stated in its own reason), 2 REJECTED with
+  reasons. The ladder changed the artifact materially rather than decorating it: it produced the
+  four-lane correction (the page had sold one-paste autopilot as the whole Owner model), the fix to
+  "Fable appears nowhere in between" (false under the fix loop the same page describes), the
+  lean-scribe deferral disclosure on the post-land checkpoint, the bounded LGTM rule, the receipt
+  honesty line, the honest STAGED tile, the published anchor table, the "snapshot not live state"
+  warning on Panel 5, the precise CI claim, the GENERATED SET rename with the no-hand-merge rule,
+  the gate anchor spot-check duty, and three extra self-test cases (amputated map manifest,
+  hand-edited MANIFEST-DIGEST, and a decoy manifest in the rendered body).
+Open items: 18 listed, 13 open — UNCHANGED. No item added, closed, renumbered or reordered. Item 18
+  EXTENDED with the fourth generated output and with this run's crew-side exit evidence: the
+  pack-first self-brief and the lean-scribe compensating control are both journaled on record 78.
+  Item 18 is deliberately NOT self-closed. Four NEW residuals recorded ON item 18 rather than
+  carried silently: an anchor proves presence, never preserved meaning; the map's journal count is a
+  build-time floor that lags without going stale; CI runs neither --check so a DELETED map keeps
+  --all at exit 0 (the .github/** wiring was pre-authorized at record 74 and stayed out of this
+  run's ordered scope); and one crew wrote the generator, the checker and the page, so the pass
+  condition is partly circular. Exceptions: validate_journal.py --all --strict still exits 1 at base
+  and after, on legacy item 10 (pre-existing, unchanged; --all, which CI runs, exits 0 both times),
+  and the verify-docs CI conclusion is not observed by this crew.
+Ask Grok: the map now publishes its own anchor table so a human can check whether each quoted phrase
+  still sits in a paragraph that MEANS the claim — but that check is unpaid human attention on the
+  one artifact nobody re-reads, and pass 3 named it as the residual the whole design rests on. What
+  is the cheapest MECHANICAL signal a generator could emit that would distinguish a phrase whose
+  surrounding paragraph still asserts the claim from one whose paragraph now negates it, WITHOUT a
+  language model in the loop and without the generator becoming a second rulebook? Second: the
+  system now has four generated outputs riding every docs/tools commit and one shared checker
+  guarding them. At what number of outputs does that stop being a briefing system and start being a
+  merge hazard, and what observable in this repo would tell the gate it has crossed that line?
 ```
 
 ## MANIFEST
@@ -523,8 +522,8 @@ Generation FAILS when it is not — the one cross-file consistency check that ex
 | `CLAUDE.md` | `cc9eed20ad0469081fb335d234940820d999b6c5c02019f6c3c13d24e90d4162` |
 | `docs/SYSTEM-CURRENT.md` | `ecd943a1db9ce51c6a33b2f339ad21ab6516657bf7a134f5f5676815ddfda200` |
 | `docs/SYSTEM-SPEC-CURRENT.md` | `f99b5f4a12da6952839a0ed9ea19295e4380174a2d9657ef0a87021c88f026a0` |
-| `docs/EFFICIENCY-MODE.md` | `aa266ed68cfa28dee9d456b277107de876b1d16f23c05879b2fdca671cd30152` |
-| `docs/RUN-TEMPLATE.md` | `9799ad36620a5533dd00401943e1e4a9e4777e58f738a68d3e00e907c09e8bde` |
+| `docs/EFFICIENCY-MODE.md` | `82dd7024fc010686d9acc5bdbcb61a180db76f6597ec055e7b10d21cdbe17849` |
+| `docs/RUN-TEMPLATE.md` | `4b3893ae25ab54646b24c26f4f1b6306fde027fa9bfc948d454fedc896d5b42f` |
 | `docs/GROK.md` | `7635de9b23ccc1c06761a7b551f22487501d6690a4f07fe863ad1ef0448a897f` |
 | `docs/LANDING-PROTOCOL.md` | `9388e37a57a4736483b60c073fccd2fb62abb2925437cf82953e64b15fa1178a` |
 | `docs/HANDOFF-FORMAT.md` | `4db1a9a489ec090b3ce555fa4e2f537c8401662501736c172a58b4d254eb88e1` |
@@ -532,16 +531,16 @@ Generation FAILS when it is not — the one cross-file consistency check that ex
 | `docs/OWNER-FLOW.md` | `1caa25201c04a47c46c23d14421c9218101c107e06e9cf76f7e74ffd1cd2fcb0` |
 | `docs/NIGHTLY-HYGIENE.md` | `464ee705a33a71c764b102798bd6fa93fd0b9c9cdf90d4345509599288eed3d6` |
 | `docs/lessons/lessons.jsonl` | `99c3a9df776fbda5159ae5211daede50f9069e62601b5db2ab0434e1649f1aae` |
-| `docs/PATCH-NOTES-CURRENT.md` | `2001889ffc8af1edf9664c21cace6ca347678699d5bdad934b5463f15d1df266` |
-| `docs/LATEST-HANDOFF.md` | `6fdbbe804b25498efe8a4b2df66333b06f1c2cf2fec63595bfbdd9b0b85717e0` |
-| `tools/validate_journal.py` | `846fbb6bfcd52bead243e4f8dc8b7d5669451d059b456dfe4b9c54ca6e41eee5` |
+| `docs/PATCH-NOTES-CURRENT.md` | `37559f92a07114a966959eb873fce5437475780279beed14d81d83580a2f5f08` |
+| `docs/LATEST-HANDOFF.md` | `9d59a4d79c877ad20abbe9119d1d8508952b9055314d81c9848d633deed1b446` |
+| `tools/validate_journal.py` | `816ea1c1f33f29c5d91950bc540bf6f5d802b27458276f633e082bae918f7ded` |
 
 Generated outputs, hashed so a hand-edit of them is detectable too:
 
 | generated file | sha256 |
 | :-- | :-- |
 | `docs/GROK-CONTEXT.txt` | `ee04acb2fa6bb866455e46b48c3a5b9206e8fa53437aeb0a711bd64b3b1bec82` |
-| `AGENTS.md` | `74cfd965dd3b99b4a507b35870a847eb51e98613b0578584da49b37d7adc32b3` |
+| `AGENTS.md` | `023828c02788ebb73e8db6361f76b624bfb1606b818bc8f08c8458d62379243d` |
 
 **What the MANIFEST deliberately does NOT cover, so nobody reads more into it:**
 (1) `docs/run-journals/**` — append-only evidence, not a rule source; including it would

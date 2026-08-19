@@ -26,9 +26,12 @@ HANDOFF block without checking in. Follow CLAUDE.md as the standing contract.
   the mirror for the strings it named and JOURNAL what you found. That read is the compensating
   control for the deferral; skipping it removes the check rather than deferring it.
 - REGENERATION RULE: if you changed anything under docs/ or tools/, run
-  python3 tools/gen_brief.py and commit docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt and AGENTS.md
-  in the SAME commit. Regenerate AFTER PATCH-NOTES and LATEST-HANDOFF are final, because the
-  generator reads them. The validator FAILS on a stale pack; that is the backstop, not the rule.
+  python3 tools/gen_brief.py AND python3 tools/gen_map.py, and commit all FOUR outputs
+  (docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md, docs/SYSTEM-MAP.html) in the SAME
+  commit. Regenerate AFTER PATCH-NOTES and LATEST-HANDOFF are final, because the
+  generators read them, and run gen_map.py LAST OF ALL — after your journal appends — because
+  the map prints the journal record count and nothing FAILS when that number lags.
+  The validator FAILS on a stale pack or a stale map; that is the backstop, not the rule.
 - Read docs/PATCH-NOTES-CURRENT.md REMAINING OPEN ITEMS before substantive work; never silently
   re-close or re-open an item.
 - Critique per docs/GROK.md: routine = 1 pass, significant = the 3-pass ladder. Run the Grok CLI if
@@ -41,8 +44,10 @@ HANDOFF block without checking in. Follow CLAUDE.md as the standing contract.
   re-opens that item. Nothing is PASS or CLOSED in your report.
 - Run the validators BEFORE landing: python3 tools/validate_journal.py --all (exit 0),
   python3 tools/validate_journal.py --self-test (all cases pass), python3 tools/gen_brief.py
-  --check (exit 0 — this is the only detector for a DELETED generated file; the staleness check
-  skips cleanly on an absent pack), and python3 tools/specguard.py --spec on each package file
+  --check AND python3 tools/gen_map.py --check (both exit 0 — these are the ONLY detectors for a
+  DELETED generated file and for a map whose printed counts have gone stale; the staleness check
+  skips cleanly on an absent pack or an absent map, and CI runs only --self-test and --all, so
+  these two are on you), and python3 tools/specguard.py --spec on each package file
   you touched, before and after.
 - Land via the best available tier in docs/LANDING-PROTOCOL.md and say which tier you used. The
   run-journal record AND docs/LATEST-HANDOFF.md ride the SAME commit as the change.
@@ -102,8 +107,9 @@ DEFINITION OF DONE: <the observable end state, file by file, plus any string a r
 SCOPE: files under docs/ and tools/ ONLY. A PR touching anything else is out of scope and gets
   closed without merge.
 REGENERATE THE BRIEFINGS: if your change touches docs/ or tools/, run python3 tools/gen_brief.py
-  and commit its three outputs (docs/BRIEF-PACK.md, docs/GROK-CONTEXT.txt, AGENTS.md) in the same
-  PR. CI fails a stale pack. If you cannot run Python, say so in the PR description — the Claude
+  and python3 tools/gen_map.py and commit all four outputs (docs/BRIEF-PACK.md,
+  docs/GROK-CONTEXT.txt, AGENTS.md, docs/SYSTEM-MAP.html) in the same
+  PR. CI fails a stale pack or a stale map. If you cannot run Python, say so in the PR description — the Claude
   gate regenerates before merge and your PR is expected to fail that check until it does.
 NEVER TOUCH from this lane: docs/run-journals/** (the journal is Claude-only),
   docs/PATCH-NOTES-CURRENT.md, docs/LATEST-HANDOFF.md.
@@ -224,8 +230,13 @@ scope or preferences. Run it to a verdict or to a BLOCKED handoff.
    is always fable_phases minus 2). LEAN SCRIBE (v4.1.16, once ratified): the scribe verifies its own
    LANDED line and the validator exit only; name the Drive CONTENT strings for the NEXT run to read
    and journal as the compensating control, or order full verification here when the stakes warrant.
-   If the crew changed docs/ or tools/, the scribe confirms tools/gen_brief.py was re-run in that
-   same commit — a stale pack is a validator FAIL, so this is a check, not a courtesy.
+   If the crew changed docs/ or tools/, the scribe confirms tools/gen_brief.py AND
+   tools/gen_map.py were re-run in that same commit — a stale pack or a stale map is a validator
+   FAIL, so this is a check, not a courtesy.
+   IF docs/SYSTEM-MAP.html CHANGED, spot-check at least THREE rows of its published anchor table
+   against the paragraph each phrase sits in. The generator proves the phrase is still present; it
+   cannot prove the paragraph still MEANS what the page claims, and this reading is the only
+   detector the system has for an inverted rule behind an intact phrase. Say which rows you read.
 7. KEEP LIVE FABLE PHASES to plan + gate, plus one per fix loop. Everything else is crew work.
 8. END by reporting the verdict to the Owner in one short message, and END THAT MESSAGE WITH THE
    USAGE RECEIPT. You compose it because only the gating surface sees the spawn results: tokens per

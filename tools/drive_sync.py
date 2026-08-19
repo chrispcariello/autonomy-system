@@ -30,7 +30,12 @@ from googleapiclient.http import MediaFileUpload
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 TOKEN_URI = "https://oauth2.googleapis.com/token"
 FOLDER_MIME = "application/vnd.google-apps.folder"
-TEXT_TYPES = {".md": "text/markdown", ".jsonl": "text/plain", ".txt": "text/plain"}
+TEXT_TYPES = {".md": "text/markdown", ".jsonl": "text/plain", ".txt": "text/plain",
+              # docs/SYSTEM-MAP.html is a generated docs/** file and therefore mirrors.
+              # Without this row it would upload as application/octet-stream, which Drive
+              # neither indexes nor renders - and the post-land CONTENT check (read the
+              # words, not the clock) would have nothing to read.
+              ".html": "text/html"}
 DEFAULT_MIME = "application/octet-stream"
 SHARED = {"supportsAllDrives": True}
 OAUTH_VARS = ("GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET",
